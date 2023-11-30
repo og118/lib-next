@@ -14,6 +14,7 @@ async def create_user(create_user_input: CreateUserInput):
     user: User = await UserService().create_new_user(email, name)
     return user
 
+
 @router.get(path="")
 async def get_user(id: int):
     try:

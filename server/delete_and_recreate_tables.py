@@ -32,6 +32,23 @@ async def create_user_table(connection):
     await connection.execute(query)
 
 
+async def create_book_table(connection):
+    query = f"""CREATE TABLE {schema_name}.book (
+        id                      SERIAL PRIMARY KEY,
+        title                   VARCHAR(255) NOT NULL,
+        authors                 VARCHAR(255)[] NOT NULL,
+        isbn                    VARCHAR(13) UNIQUE NULL,
+        isbn13                  VARCHAR(13) UNIQUE NULL,
+        language_code           VARCHAR(10) NULL,
+        num_pages               INT NULL,
+        publication_date        DATE NULL,
+        publisher               VARCHAR(255) NULL
+    );"""
+
+    print(f"Executing query: {query}")
+    await connection.execute(query)
+
+
 def verify_local_environment():
     if host_name != 'localhost' and host_name != '127.0.0.1' and host_name != 'postgres':
         answer: str = input(f"Environment using host: {host_name} seems to be non local. "
@@ -76,6 +93,7 @@ async def rebuild_schema():
 
     print(f"Recreating all tables in schema: {schema_name}")
     await create_user_table(connection)
+    await create_book_table(connection)
 
     await connection.close()
     print(f"Closed connection")

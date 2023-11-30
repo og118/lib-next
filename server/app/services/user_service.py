@@ -30,7 +30,7 @@ class UserService:
         query = f"INSERT INTO {self.schema}.user (name, email) " \
                 f"VALUES ($1, $2) RETURNING *;"
 
-        params: Tuple[str, str, str, bool, bool] = (name, email.lower())
+        params: Tuple[str, str] = (name, email.lower())
 
         async with self.pool.acquire() as connection:
             async with connection.transaction():
@@ -55,7 +55,7 @@ class UserService:
 
         async with self.pool.acquire() as connection:
             async with connection.transaction():
-                print(f"Acquired connection and opened transaction to insert new user via query: {query}")
+                print(f"Acquired connection and opened transaction to fetch uuser via query: {query}")
                 user_record: Record = await connection.fetchrow(query, id)
         if not user_record: 
         # TODO: handle exceptions in general
