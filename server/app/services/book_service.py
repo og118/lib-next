@@ -69,11 +69,11 @@ class BookService:
         query = f"SELECT * FROM {self.schema}.book WHERE id = $1;"
 
         async with self.pool.acquire() as connection:
-            async with connection.transaction():
-                print(
-                    f"Acquired connection and opened transaction to fetch book via query: {query}"
-                )
-                book_record: Record = await connection.fetchrow(query, id)
+            print(
+                f"Acquired connection and opened transaction to fetch book via query: {query}"
+            )
+            book_record: Record = await connection.fetchrow(query, id)
+
         if not book_record:
             # TODO: handle exceptions in general
             raise Exception(f"Book {id} not found")
