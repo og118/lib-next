@@ -109,6 +109,7 @@ class BookService:
                 enumerate(update_book_input_dict.keys()),
             )
         )
+        key_fields.insert(0, "updated_at = NOW()")
         update_clause: str = ", ".join(key_fields)
         query = (
             f"UPDATE {self.schema}.book SET {update_clause} WHERE id = $1 RETURNING *;"

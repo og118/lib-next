@@ -12,10 +12,16 @@ class Book(BaseModel):
     isbn13: Optional[str] = Field(None, description="ISBN13 of the book")
     language_code: Optional[str] = Field(None, description="Language code of the book")
     num_pages: Optional[int] = Field(None, description="Number of pages in the book")
+    stock_quantity: int = Field(
+        ..., description="Number of books in stock in the platform"
+    )
     publication_date: Optional[datetime] = Field(
         None, description="Publication date of the book"
     )
     publisher: Optional[str] = Field(None, description="Publisher of the book")
     created_at: datetime = Field(
         ..., description="Datetime when the book was added to the platform"
+    )
+    updated_at: datetime = Field(
+        ..., description="Datetime when the book was last updated"
     )

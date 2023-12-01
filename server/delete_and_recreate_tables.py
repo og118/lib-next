@@ -42,9 +42,11 @@ async def create_book_table(connection):
         isbn13                  VARCHAR(13) UNIQUE NULL,
         language_code           VARCHAR(10) NULL,
         num_pages               INT NULL,
+        stock_quantity          INT NOT NULL DEFAULT 0,
         publication_date        DATE NULL,
         publisher               VARCHAR(255) NULL,
         created_at              TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at              TIMESTAMP NOT NULL DEFAULT NOW(),
         CONSTRAINT book_title_authors_key UNIQUE (title, authors)
     );"""
 

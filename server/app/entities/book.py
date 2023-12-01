@@ -11,6 +11,9 @@ class CreateBookInput(BaseModel):
     isbn13: Optional[str] = Field(None, description="ISBN13 of the book")
     language_code: Optional[str] = Field(None, description="Language code of the book")
     num_pages: Optional[int] = Field(None, description="Number of pages in the book")
+    stock_quantity: int = Field(
+        ..., description="Number of books in stock in the platform"
+    )
     publication_date: Optional[datetime] = Field(
         None, description="Publication date of the book"
     )
@@ -24,6 +27,9 @@ class UpdateBookInput(BaseModel):
     isbn13: Optional[str] = Field(None, description="ISBN13 of the book")
     language_code: Optional[str] = Field(None, description="Language code of the book")
     num_pages: Optional[int] = Field(None, description="Number of pages in the book")
+    stock_quantity: Optional[int] = Field(
+        None, description="Number of books in stock in the platform"
+    )
     publication_date: Optional[datetime] = Field(
         None, description="Publication date of the book"
     )
