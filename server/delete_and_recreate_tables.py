@@ -47,7 +47,23 @@ async def create_book_table(connection):
         publisher               VARCHAR(255) NULL,
         created_at              TIMESTAMP NOT NULL DEFAULT NOW(),
         updated_at              TIMESTAMP NOT NULL DEFAULT NOW(),
-        CONSTRAINT book_title_authors_key UNIQUE (title, authors)
+        CONSTRAINT              book_title_authors_key UNIQUE (title, authors)
+    );"""
+
+    print(f"Executing query: {query}")
+    await connection.execute(query)
+
+
+async def create_tranasction_table(connection):
+    query = f"""CREATE TABLE {schema_name}.transaction (
+        id                      SERIAL PRIMARY KEY,
+        user_id                 INT NOT NULL,
+        book_id                 INT NOT NULL,
+        status                  SMALLINT NOT NULL,
+        created_at              TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at              TIMESTAMP NOT NULL DEFAULT NOW(),
+        CONSTRAINT              transaction_mapping_user_id_fk FOREIGN KEY (user_id) REFERENCES {schema_name}.user (id),
+        CONSTRAINT              transaction_mapping_book_id_fk FOREIGN KEY (book_id) REFERENCES {schema_name}.book (id)
     );"""
 
     print(f"Executing query: {query}")
@@ -117,6 +133,7 @@ async def rebuild_schema():
     print(f"Recreating all tables in schema: {schema_name}")
     await create_user_table(connection)
     await create_book_table(connection)
+    await create_tranasction_table(connection)
 
     await connection.close()
     print(f"Closed connection")
