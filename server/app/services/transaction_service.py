@@ -65,19 +65,21 @@ class TransactionService:
         print(f"Validating transaction for user_id: {user_id}")
 
         query = f"""
-        WITH user_transaction AS (
-            SELECT COUNT(*), SUM(book.charge_per_day)
-            FROM {self.schema}.transaction
-            INNER JOIN {self.schema}.book
-            ON transaction.book_id = book.id
-            WHERE user_id = $1
-            AND status = '{TransactionStatus.PENDING.value}'
-        ), user_charge_limit AS (
-            SELECT charge_limit
-            FROM {self.schema}.user
-            WHERE id = $1
-        )"""
-        return True
+        SELECT SUM(DATE(NOW()) - DATE(created_at)) * $1 
+            AS BORROW_DAYS FROM 
+        {self.schema}.transaction 
+        WHERE user_id = $2
+        AND status = '{TransactionStatus.PENDING.value}';
+        """
+
+        async with self.pool.acquire() as connection:
+            print(
+                f"Acquired connection and opened transaction to validate transaction via query: {query}"
+            )
+            transaction_possible = await connection.fetchrow(
+                query, int(os.environ.get("CHARGE_PER_DAY")), user_id
+            )
+        return transaction_possible[0] < int(os.environ.get("CHARGE_LIMIT"))
 
     async def create_transaction(self, user_id: int, book_id: int):
         """
