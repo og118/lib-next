@@ -20,6 +20,26 @@ async def drop_all_tables_if_present(connection):
     print(f"Executing query: {query}")
     await connection.execute(query)
 
+    # Fetch all defined enums
+    enum_query = """
+    SELECT n.nspname AS schema, t.typname AS type
+    FROM pg_type t
+    LEFT JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+    WHERE (
+        t.typrelid = 0 OR (
+            SELECT c.relkind = 'c' FROM pg_catalog.pg_class c WHERE c.oid = t.typrelid
+    )) AND NOT EXISTS (
+        SELECT 1 FROM pg_catalog.pg_type el 
+        WHERE el.oid = t.typelem AND el.typarray = t.oid
+    ) AND n.nspname NOT IN ('pg_catalog', 'information_schema');
+"""
+    enum_details = await connection.fetch(enum_query)
+    enums = [f"{row['schema']}.{row['type']}" for row in enum_details]
+    enums = ", ".join(enums)
+    enum_query = f"DROP TYPE IF EXISTS {enums} CASCADE;"
+    print(f"Executing query: {enum_query}")
+    await connection.execute(enum_query)
+
 
 async def create_user_table(connection):
     query = f"""CREATE TABLE {schema_name}.user (
@@ -55,11 +75,16 @@ async def create_book_table(connection):
 
 
 async def create_tranasction_table(connection):
+    enum_query = f"""CREATE TYPE {schema_name}.transaction_status 
+    AS ENUM ('PENDING', 'COMPLETED');
+    """
+    print(f"Executing query: {enum_query}")
+    await connection.execute(enum_query)
     query = f"""CREATE TABLE {schema_name}.transaction (
         id                      SERIAL PRIMARY KEY,
         user_id                 INT NOT NULL,
         book_id                 INT NOT NULL,
-        status                  SMALLINT NOT NULL,
+        status                  frappe.transaction_status NOT NULL DEFAULT 'PENDING',
         created_at              TIMESTAMP NOT NULL DEFAULT NOW(),
         updated_at              TIMESTAMP NOT NULL DEFAULT NOW(),
         CONSTRAINT              transaction_mapping_user_id_fk FOREIGN KEY (user_id) REFERENCES {schema_name}.user (id),
