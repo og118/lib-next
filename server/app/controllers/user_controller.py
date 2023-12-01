@@ -23,3 +23,23 @@ async def get_user(id: int):
         # Implement better exception handling
         return {}
     return user
+
+
+@router.patch(path="")
+async def update_user(id: int, name: str):
+    try:
+        user: User = await UserService().update_user_by_id(id, name)
+    except Exception as e:
+        # Implement better exception handling
+        return {}
+    return user
+
+
+@router.delete(path="")
+async def delete_user(id: int):
+    try:
+        user: User = await UserService().delete_user_by_id(id)
+    except Exception as e:
+        # Implement better exception handling
+        return {}
+    return user
