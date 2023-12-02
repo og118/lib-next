@@ -1,9 +1,8 @@
-from fastapi import APIRouter
-
 from app.entities.book import CreateBookInput, UpdateBookInput
 from app.models.book import Book
 from app.services.book_service import BookService
 from app.utils.logging_utils import logger
+from fastapi import APIRouter
 
 router: APIRouter = APIRouter()
 
@@ -19,6 +18,18 @@ async def create_book(create_book_input: CreateBookInput):
 
 
 @router.get(path="")
+async def get_books():
+    logger.info(f"Recieved a request to fetch all books")
+    try:
+        books: list[Book] = await BookService().get_all_books()
+    except Exception as e:
+        # Implement better exception handling
+        return {}
+    logger.info(f"Successfully fetched all books")
+    return books
+
+
+@router.get(path="/{id}")
 async def get_book(id: int):
     logger.info(f"Recieved a request to fetch book with id: {id}")
     try:
@@ -30,7 +41,7 @@ async def get_book(id: int):
     return book
 
 
-@router.patch(path="")
+@router.patch(path="/{id}")
 async def update_book(id: int, update_book_input: UpdateBookInput):
     logger.info(f"Recieved a request to update book with id: {id}")
     try:
@@ -44,7 +55,7 @@ async def update_book(id: int, update_book_input: UpdateBookInput):
     return book
 
 
-@router.delete(path="")
+@router.delete(path="/{id}")
 async def delete_book(id: int):
     logger.info(f"Recieved a request to delete book with id: {id}")
     try:

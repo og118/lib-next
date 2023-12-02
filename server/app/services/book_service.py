@@ -1,12 +1,11 @@
 import os
 from typing import Any, Dict, List
 
-from asyncpg import Pool, Record
-
 from app.database import DatabaseConnectionPool
 from app.models.book import Book
 from app.utils.deserialization_utils import deserialize_records
 from app.utils.logging_utils import logger
+from asyncpg import Pool, Record
 
 
 class BookService:
@@ -56,6 +55,26 @@ class BookService:
             f"Book: {create_book_input_dict['title']} successfully inserted in the db"
         )
         return deserialize_records(book_record, Book)
+
+    async def get_all_books(self) -> List[Book]:
+        """Fetches all books from the database.
+
+        Returns:
+            books: list of pydantic model objects of the books. See app.models.book.Book for more details.
+        """
+
+        query = f"SELECT * FROM {self.schema}.book;"
+
+        async with self.pool.acquire() as connection:
+            logger.info(
+                f"Acquired connection and opened transaction to fetch all books via query: {query}"
+            )
+            books_record: List[Record] = await connection.fetch(query)
+
+        logger.info(f"Successfully fetched all books with count: {len(books_record)}")
+        if not books_record:
+            return []
+        return deserialize_records(books_record, Book)
 
     async def get_book_by_id(self, id: int) -> Book:
         """Fetches a book with given id from the database.
