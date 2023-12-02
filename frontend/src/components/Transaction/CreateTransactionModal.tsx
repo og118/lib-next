@@ -39,6 +39,7 @@ const CreateTransactionModal = (props: CreateTransactionModalProps) => {
 
   const handleClose = () => {
     setLoading(false);
+    setQuantity(0);
     setTransaction(initialValues);
     props.onClose();
   };
