@@ -3,6 +3,7 @@ import Books from "./views/Book";
 import ErrorPage from "./views/ErrorPage";
 import Dashboard from "./views/Dashboard";
 import Users from "./views/Users";
+import Transaction from "./views/Transaction";
 
 const router = createBrowserRouter([
   {
@@ -18,6 +19,10 @@ const router = createBrowserRouter([
     path: "/users",
     element: <Users />,
   },
+  {
+    path: "/checkout",
+    element: <Transaction />
+  }
 ]);
 
 export const AppRouter = () => {

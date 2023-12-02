@@ -9,11 +9,11 @@ import {
   Stack,
   Typography,
 } from "@mui/joy";
-import { forwardRef, useEffect, useState } from "react";
-import { NumericFormat, NumericFormatProps } from "react-number-format";
+import { useEffect, useState } from "react";
 import { Book, BookInput } from "../../models/book";
 import { createBook, updateBook } from "../../api/book";
 import { useSnackbar } from "notistack";
+import { NumericFormatAdapter } from "../NumericFormatter";
 
 interface CreateBookModalProps {
   open: boolean;
@@ -21,34 +21,6 @@ interface CreateBookModalProps {
   isEditing: boolean;
   book?: Book;
 }
-
-interface NumericProps {
-  onChange: (event: { target: { name: string; value: string } }) => void;
-  name: string;
-}
-
-const NumericFormatAdapter = forwardRef<NumericFormatProps, NumericProps>(
-  function NumericFormatAdapter(props, ref) {
-    const { onChange, ...other } = props;
-
-    return (
-      <NumericFormat
-        {...other}
-        getInputRef={ref}
-        onValueChange={(values) => {
-          onChange({
-            target: {
-              name: props.name,
-              value: values.value,
-            },
-          });
-        }}
-        thousandSeparator
-        valueIsNumericString
-      />
-    );
-  }
-);
 
 const initialValues: BookInput = {
   title: "",
@@ -128,6 +100,8 @@ const CreateBookModal = (props: CreateBookModalProps) => {
         variant: "error",
         preventDuplicate: true,
       });
+      setLoading(false);
+      return;
     }
     enqueueSnackbar(
       `Book ${props.isEditing ? "updated" : "created"} successfully`,

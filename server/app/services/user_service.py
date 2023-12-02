@@ -49,7 +49,7 @@ class UserService:
             users: list of pydantic model objects of the users. See app.models.user.User for more details.
         """
 
-        query = f"SELECT * FROM {self.schema}.user;"
+        query = f"SELECT * FROM {self.schema}.user ORDER BY id;"
 
         async with self.pool.acquire() as connection:
             async with connection.transaction():

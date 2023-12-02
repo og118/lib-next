@@ -79,6 +79,8 @@ const CreateUserModal = (props: CreateUserModalProps) => {
         variant: "error",
         preventDuplicate: true,
       });
+      setLoading(false);
+      return
     }
     enqueueSnackbar(
       `User ${props.isEditing ? "updated" : "created"} successfully`,

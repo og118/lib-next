@@ -26,6 +26,7 @@ const DeleteUserModal = ({ user, open, onClose }: Props) => {
         variant: "error",
         preventDuplicate: true,
       });
+      return;
     }
     enqueueSnackbar("User deleted successfully", {
       variant: "success",

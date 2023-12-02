@@ -63,7 +63,7 @@ class BookService:
             books: list of pydantic model objects of the books. See app.models.book.Book for more details.
         """
 
-        query = f"SELECT * FROM {self.schema}.book;"
+        query = f"SELECT * FROM {self.schema}.book ORDER BY id;"
 
         async with self.pool.acquire() as connection:
             logger.info(

@@ -8,7 +8,7 @@ import CreateUserModal from "../components/Users/CreateUserModal";
 import DeleteUserModal from "../components/Users/DeleteUserModal";
 import { fetchAllUsers } from "../api/user";
 
-const Users = () => {
+const UsersPage = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   const [users, setUsers] = useState<User[]>([]);
@@ -59,8 +59,6 @@ const Users = () => {
           <tr>
             <th style={{ width: "40%" }}>Name</th>
             <th>Email</th>
-            <th></th>
-            <th></th>
           </tr>
           {users.map((user) => (
             <tr key={user.id}>
@@ -112,4 +110,4 @@ const Users = () => {
   );
 };
 
-export default Users;
+export default UsersPage;

@@ -8,7 +8,7 @@ import CreateBookModal from "../components/Books/CreateBookModal";
 import LoadingScreen from "../components/LoadingScreen";
 import DeleteBookModal from "../components/Books/DeleteBookModal";
 
-const Books = () => {
+const BooksPage = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   const [books, setBooks] = useState<Book[]>([]);
@@ -59,8 +59,6 @@ const Books = () => {
             <th>Author</th>
             <th>Publisher</th>
             <th>Stock</th>
-            <th></th>
-            <th></th>
           </tr>
           {books.map((book) => (
             <tr key={book.id}>
@@ -106,4 +104,4 @@ const Books = () => {
   );
 };
 
-export default Books;
+export default BooksPage;

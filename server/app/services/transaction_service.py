@@ -1,12 +1,11 @@
 import os
 
-from asyncpg import Pool
-
 from app.database import DatabaseConnectionPool
 from app.entities.transctions import TransactionStatus
 from app.models.transactions import Transactions
 from app.utils.deserialization_utils import deserialize_records
 from app.utils.logging_utils import logger
+from asyncpg import Pool
 
 
 class TransactionService:
@@ -47,6 +46,8 @@ class TransactionService:
             book_stock_count = await connection.fetchrow(query, book_id)
 
         logger.info(f"Book stock count: {book_stock_count[0]}")
+        if not book_stock_count[0]:
+            return False
         return book_stock_count[0] > 0
 
     async def validate_transaction_possible(self, user_id) -> bool:
@@ -79,6 +80,9 @@ class TransactionService:
             transaction_possible = await connection.fetchrow(
                 query, int(os.environ.get("CHARGE_PER_DAY")), user_id
             )
+        if not transaction_possible[0]:
+            return True
+        logger.info(f"Transaction possible: {transaction_possible[0]}")
         return transaction_possible[0] < int(os.environ.get("CHARGE_LIMIT"))
 
     async def create_transaction(self, user_id: int, book_id: int):
@@ -92,7 +96,9 @@ class TransactionService:
         Returns:
             book: pydantic model object of the book. See app.models.book.Book for more details.
         """
-        logger.info(f"Creating new transaction for book_id: {book_id} and user_id: {user_id}")
+        logger.info(
+            f"Creating new transaction for book_id: {book_id} and user_id: {user_id}"
+        )
 
         query = f"""
         INSERT INTO {self.schema}.transaction
@@ -107,7 +113,9 @@ class TransactionService:
                 )
                 transaction_record = await connection.fetchrow(query, book_id, user_id)
 
-        logger.info(f"Transaction: {transaction_record} successfully inserted in the db")
+        logger.info(
+            f"Transaction: {transaction_record} successfully inserted in the db"
+        )
         return deserialize_records(transaction_record, Transactions)
 
     async def get_all_transactions(self):
@@ -120,7 +128,7 @@ class TransactionService:
         logger.info(f"Getting all transactions")
 
         query = f"""
-        SELECT * FROM {self.schema}.transaction
+        SELECT * FROM {self.schema}.transaction ORDER BY id;
         """
         async with self.pool.acquire() as connection:
             logger.info(
@@ -128,7 +136,9 @@ class TransactionService:
             )
             transaction_records = await connection.fetch(query)
 
-        logger.info(f"Transactions: {transaction_records} successfully fetched from the db")
+        logger.info(
+            f"Transactions: {len(transaction_records)} successfully fetched from the db"
+        )
         return deserialize_records(transaction_records, Transactions)
 
     async def get_transaction(self, transaction_id: int):
@@ -153,7 +163,9 @@ class TransactionService:
             )
             transaction_record = await connection.fetchrow(query, transaction_id)
 
-        logger.info(f"Transaction: {transaction_record} successfully fetched from the db")
+        logger.info(
+            f"Transaction: {transaction_record} successfully fetched from the db"
+        )
         return deserialize_records(transaction_record, Transactions)
 
     async def update_transaction_status(
@@ -211,7 +223,9 @@ class TransactionService:
             )
             transaction_records = await connection.fetch(query, user_id)
 
-        logger.info(f"Transactions: {transaction_records} successfully fetched from the db")
+        logger.info(
+            f"Transactions: {transaction_records} successfully fetched from the db"
+        )
         return deserialize_records(transaction_records, Transactions)
 
     async def get_all_transactions_for_book(self, book_id: int):
@@ -236,5 +250,7 @@ class TransactionService:
             )
             transaction_records = await connection.fetch(query, book_id)
 
-        logger.info(f"Transactions: {transaction_records} successfully fetched from the db")
+        logger.info(
+            f"Transactions: {transaction_records} successfully fetched from the db"
+        )
         return deserialize_records(transaction_records, Transactions)

@@ -19,6 +19,7 @@ const DeleteBookModal = ({ book, open, onClose }: Props) => {
         variant: "error",
         preventDuplicate: true,
       });
+      return;
     }
     enqueueSnackbar("Book deleted successfully", {
       variant: "success",
