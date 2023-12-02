@@ -9,15 +9,17 @@ import {
   Stack,
   Typography,
 } from "@mui/joy";
-import { forwardRef, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { NumericFormat, NumericFormatProps } from "react-number-format";
-import { BookInput } from "../../models/book";
-import { createBook } from "../../api/book";
+import { Book, BookInput } from "../../models/book";
+import { createBook, updateBook } from "../../api/book";
 import { useSnackbar } from "notistack";
 
 interface CreateBookModalProps {
   open: boolean;
   onClose: () => void;
+  isEditing: boolean;
+  book?: Book;
 }
 
 interface NumericProps {
@@ -59,9 +61,15 @@ const initialValues: BookInput = {
 const CreateBookModal = (props: CreateBookModalProps) => {
   const { enqueueSnackbar } = useSnackbar();
 
-  const [book, setBook] = useState<BookInput>(initialValues);
+  const [book, setBook] = useState<BookInput>(props.book ?? initialValues);
   const [currentAuthor, setCurrentAuthor] = useState<string>("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (props.book && props.isEditing) {
+      setBook(props.book);
+    }
+  }, [props.book]);
 
   const handleValidateBook = () => {
     if (book.authors.length === 0) {
@@ -108,13 +116,26 @@ const CreateBookModal = (props: CreateBookModalProps) => {
       setLoading(false);
       return;
     }
-    const data = await createBook(book);
+    let data = null;
+    if (props.isEditing) {
+      if (!props.book) {
+        return;
+      }
+      data = await updateBook(props.book.id, book);
+    } else data = await createBook(book);
     if (!data) {
       enqueueSnackbar("Something went wrong. Please try again later", {
         variant: "error",
         preventDuplicate: true,
       });
     }
+    enqueueSnackbar(
+      `Book ${props.isEditing ? "updated" : "created"} successfully`,
+      {
+        variant: "success",
+        preventDuplicate: true,
+      }
+    );
     setLoading(false);
     setBook(initialValues);
     props.onClose();
@@ -125,7 +146,9 @@ const CreateBookModal = (props: CreateBookModalProps) => {
       <ModalDialog size="lg">
         <ModalClose />
         <Container>
-          <Typography level="h2">Create a new book</Typography>
+          <Typography level="h2">
+            {props.isEditing ? "Edit book" : "Create a new book"}
+          </Typography>
           <Stack
             spacing={2}
             sx={{
@@ -282,7 +305,7 @@ const CreateBookModal = (props: CreateBookModalProps) => {
           >
             <Button onClick={props.onClose}>Cancel</Button>
             <Button onClick={handleCreateBook} loading={loading}>
-              Create
+              {props.isEditing ? "Save" : "Create"}
             </Button>
           </Stack>
         </Container>

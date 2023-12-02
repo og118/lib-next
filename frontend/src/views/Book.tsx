@@ -1,21 +1,26 @@
 import { Box, Button, Stack, Table } from "@mui/joy";
 import DashboardContainer from "../components/DashboardContainer";
 import { useEffect, useState } from "react";
-import { createBook, deleteBook, fetchAllBooks, updateBook } from "../api/book";
+import { deleteBook, fetchAllBooks, updateBook } from "../api/book";
 import { useSnackbar } from "notistack";
 import { Book, BookInput } from "../models/book";
 import CreateBookModal from "../components/Books/CreateBookModal";
+import LoadingScreen from "../components/LoadingScreen";
+import DeleteBookModal from "../components/Books/DeleteBookModal";
 
 export const Books = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   const [books, setBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const [openCreateBookDialog, setOpenCreateBookDialog] = useState(false);
-  const [openEditBookDialog, setEditBookDialog] = useState(false);
-  const [openDeleteBookDialog, setDeleteBookDialog] = useState(false);
+  const [openEditBookDialog, setOpenEditBookDialog] = useState(false);
+  const [bookToEdit, setBookToEdit] = useState<Book | undefined>(undefined);
+  const [openDeleteBookDialog, setOpenDeleteBookDialog] = useState(false);
 
   const handleFetchBooks = async () => {
+    setLoading(true);
     const data = await fetchAllBooks();
     if (!data) {
       enqueueSnackbar("Something went wrong. Please try again later", {
@@ -24,6 +29,7 @@ export const Books = () => {
       });
     }
     setBooks(data ?? []);
+    setLoading(false);
   };
 
   const handleDeleteBook = async (bookId: number) => {
@@ -54,6 +60,7 @@ export const Books = () => {
 
   return (
     <DashboardContainer>
+      <LoadingScreen loading={loading}/>
       <h1>Books</h1>
       <Box
         sx={{
@@ -84,21 +91,38 @@ export const Books = () => {
               <td>{book.publisher}</td>
               <td>{book.stock_quantity}</td>
               <td>
-                <Button>Delete</Button>
+                <Button onClick={() => {
+                  setBookToEdit(book);
+                  setOpenDeleteBookDialog(true);
+                }}>Delete</Button>
               </td>
               <td>
-                <Button>Edit</Button>
+                <Button onClick={() => {
+                  setBookToEdit(book);
+                  setOpenEditBookDialog(true);
+                }}>Edit</Button>
               </td>
             </tr>
           ))}
         </thead>
       </Table>
       <CreateBookModal
-        open={openCreateBookDialog}
+        open={openCreateBookDialog || openEditBookDialog}
+        isEditing={openEditBookDialog}
         onClose={() => {
-          console.log("close");
+          handleFetchBooks();
           setOpenCreateBookDialog(false);
+          setOpenEditBookDialog(false);
         }}
+        book={bookToEdit}
+      />
+      <DeleteBookModal
+        open={openDeleteBookDialog}
+        onClose={() => {
+          handleFetchBooks();
+          setOpenDeleteBookDialog(false);
+        }}
+        book={bookToEdit!}
       />
     </DashboardContainer>
   );

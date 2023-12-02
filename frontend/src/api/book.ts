@@ -34,7 +34,7 @@ export const createBook = async (book: BookInput) => {
 
 export const updateBook = async (id: number, book: BookInput) => {
   try {
-    const response = await axios.patch(BACKEND_URL + `/books/${id}`, JSON.stringify(book));
+    const response = await axios.patch(BACKEND_URL + `/books/${id}`, book);
     return response.data;
   } catch (error) {
     console.log(error);
