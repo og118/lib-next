@@ -1,18 +1,18 @@
 import { Box, Button, Stack, Table } from "@mui/joy";
 import DashboardContainer from "../components/DashboardContainer";
 import { useEffect, useState } from "react";
-import { deleteBook, fetchAllBooks, updateBook } from "../api/book";
+import { fetchAllBooks } from "../api/book";
 import { useSnackbar } from "notistack";
-import { Book, BookInput } from "../models/book";
+import { Book } from "../models/book";
 import CreateBookModal from "../components/Books/CreateBookModal";
 import LoadingScreen from "../components/LoadingScreen";
 import DeleteBookModal from "../components/Books/DeleteBookModal";
 
-export const Books = () => {
+const Books = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   const [books, setBooks] = useState<Book[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [openCreateBookDialog, setOpenCreateBookDialog] = useState(false);
   const [openEditBookDialog, setOpenEditBookDialog] = useState(false);
@@ -30,28 +30,6 @@ export const Books = () => {
     }
     setBooks(data ?? []);
     setLoading(false);
-  };
-
-  const handleDeleteBook = async (bookId: number) => {
-    const data = await deleteBook(bookId);
-    if (!data) {
-      enqueueSnackbar("Something went wrong. Please try again later", {
-        variant: "error",
-        preventDuplicate: true,
-      });
-    }
-    handleFetchBooks();
-  };
-
-  const handleEditBook = async (bookId: number, book: BookInput) => {
-    const data = await updateBook(bookId, book);
-    if (!data) {
-      enqueueSnackbar("Something went wrong. Please try again later", {
-        variant: "error",
-        preventDuplicate: true,
-      });
-    }
-    handleFetchBooks();
   };
 
   useEffect(() => {
@@ -116,14 +94,16 @@ export const Books = () => {
         }}
         book={bookToEdit}
       />
-      <DeleteBookModal
+      {bookToEdit && <DeleteBookModal
         open={openDeleteBookDialog}
         onClose={() => {
           handleFetchBooks();
           setOpenDeleteBookDialog(false);
         }}
-        book={bookToEdit!}
-      />
+        book={bookToEdit}
+      />}
     </DashboardContainer>
   );
 };
+
+export default Books;

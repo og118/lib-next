@@ -1,9 +1,8 @@
-from fastapi import APIRouter
-
 from app.entities.user import CreateUserInput
 from app.models.user import User
 from app.services.user_service import UserService
 from app.utils.logging_utils import logger
+from fastapi import APIRouter
 
 router: APIRouter = APIRouter()
 
@@ -18,37 +17,53 @@ async def create_user(create_user_input: CreateUserInput):
     return user
 
 
-@router.get(path="")
+@router.get(path="/{id}")
 async def get_user(id: int):
     logger.info(f"Recieved a request to fetch user with id: {id}")
     try:
         user: User = await UserService().get_user_by_id(id)
     except Exception as e:
         # Implement better exception handling
+        logger.error(e)
         return {}
     logger.info(f"Successfully fetched user with id: {id}")
     return user
 
 
-@router.patch(path="")
+@router.get(path="")
+async def get_all_users():
+    logger.info(f"Recieved a request to fetch all users")
+    try:
+        users: list[User] = await UserService().get_all_users()
+    except Exception as e:
+        # Implement better exception handling
+        logger.error(e)
+        return {}
+    logger.info(f"Successfully fetched all users")
+    return users
+
+
+@router.patch(path="/{id}")
 async def update_user(id: int, name: str):
     logger.info(f"Recieved a request to update user with id: {id}")
     try:
         user: User = await UserService().update_user_by_id(id, name)
     except Exception as e:
         # Implement better exception handling
+        logger.error(e)
         return {}
     logger.info(f"Successfully updated user with id: {id}")
     return user
 
 
-@router.delete(path="")
+@router.delete(path="/{id}")
 async def delete_user(id: int):
     logger.info(f"Recieved a request to delete user with id: {id}")
     try:
         user: User = await UserService().delete_user_by_id(id)
     except Exception as e:
         # Implement better exception handling
+        logger.error(e)
         return {}
     logger.info(f"Successfully deleted user with id: {id}")
     return user

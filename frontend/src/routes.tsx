@@ -1,22 +1,23 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { Books } from "./views/Book";
+import Books from "./views/Book";
 import ErrorPage from "./views/ErrorPage";
-import { Dashboard } from "./views/Dashboard";
+import Dashboard from "./views/Dashboard";
+import Users from "./views/Users";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Dashboard/>,
+    element: <Dashboard />,
     errorElement: <ErrorPage />,
   },
   {
     path: "/books",
-    element: <Books/>,
+    element: <Books />,
   },
   {
-    path: "/books/:id",
-    element: <div>Book</div>,
-  }
+    path: "/users",
+    element: <Users />,
+  },
 ]);
 
 export const AppRouter = () => {

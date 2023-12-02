@@ -1,12 +1,11 @@
 import os
 from typing import Tuple
 
-from asyncpg import Pool, Record
-
 from app.database import DatabaseConnectionPool
 from app.models.user import User
 from app.utils.deserialization_utils import deserialize_records
 from app.utils.logging_utils import logger
+from asyncpg import Pool, Record
 
 
 class UserService:
@@ -42,6 +41,23 @@ class UserService:
 
         logger.info(f"User: {email} successfully inserted in the db")
         return deserialize_records(user_record, User)
+
+    async def get_all_users(self) -> list[User]:
+        """Fetches all users from the database.
+
+        Returns:
+            users: list of pydantic model objects of the users. See app.models.user.User for more details.
+        """
+
+        query = f"SELECT * FROM {self.schema}.user;"
+
+        async with self.pool.acquire() as connection:
+            async with connection.transaction():
+                logger.info(
+                    f"Acquired connection and opened transaction to fetch all users via query: {query}"
+                )
+                user_records: list[Record] = await connection.fetch(query)
+        return deserialize_records(user_records, User)
 
     async def get_user_by_id(self, id: int) -> User:
         """Fetches a user with given id from the database.
@@ -108,6 +124,8 @@ class UserService:
                     f"Acquired connection and opened transaction to delete user via query: {query}"
                 )
                 user_record: Record = await connection.fetchrow(query, id)
+
+        logger.info(f"User: {id} successfully deleted from the db")
         if not user_record:
             raise Exception(f"User {id} not found")
 

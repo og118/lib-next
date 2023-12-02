@@ -69,7 +69,7 @@ const CreateBookModal = (props: CreateBookModalProps) => {
     if (props.book && props.isEditing) {
       setBook(props.book);
     }
-  }, [props.book]);
+  }, [props.book, props.isEditing]);
 
   const handleValidateBook = () => {
     if (book.authors.length === 0) {

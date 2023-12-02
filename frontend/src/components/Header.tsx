@@ -1,12 +1,10 @@
 import Box from "@mui/joy/Box";
 import Stack from "@mui/joy/Stack";
 import Button from "@mui/joy/Button";
-import { useState } from "react";
 
 const Header = () => {
-  const [path, _] = useState(
-    window.location.href.split("/")[window.location.href.split("/").length - 1]
-  );
+  const path =
+    window.location.href.split("/")[window.location.href.split("/").length - 1];
 
   return (
     <Box
