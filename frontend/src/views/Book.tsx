@@ -1,3 +1,7 @@
+import { Container } from "@mui/joy"
+
 export const Books = () => {
-    return <div>Books</div>;
+    return <Container>
+        <h1>Books</h1>
+    </Container>
 }
