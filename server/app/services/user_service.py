@@ -1,5 +1,5 @@
 import os
-from typing import Tuple
+from typing import Tuple, List
 
 from app.database import DatabaseConnectionPool
 from app.models.user import User
@@ -42,7 +42,7 @@ class UserService:
         logger.info(f"User: {email} successfully inserted in the db")
         return deserialize_records(user_record, User)
 
-    async def get_all_users(self) -> list[User]:
+    async def get_all_users(self) -> List[User]:
         """Fetches all users from the database.
 
         Returns:
@@ -52,11 +52,12 @@ class UserService:
         query = f"SELECT * FROM {self.schema}.user ORDER BY id;"
 
         async with self.pool.acquire() as connection:
-            async with connection.transaction():
-                logger.info(
-                    f"Acquired connection and opened transaction to fetch all users via query: {query}"
-                )
-                user_records: list[Record] = await connection.fetch(query)
+            logger.info(
+                f"Acquired connection and opened transaction to fetch all users via query: {query}"
+            )
+            user_records: list[Record] = await connection.fetch(query)
+        if not user_records:
+            return []
         return deserialize_records(user_records, User)
 
     async def get_user_by_id(self, id: int) -> User:
@@ -72,11 +73,10 @@ class UserService:
         query = f"SELECT * FROM {self.schema}.user WHERE id = $1;"
 
         async with self.pool.acquire() as connection:
-            async with connection.transaction():
-                logger.info(
-                    f"Acquired connection and opened transaction to fetch uuser via query: {query}"
-                )
-                user_record: Record = await connection.fetchrow(query, id)
+            logger.info(
+                f"Acquired connection and opened transaction to fetch uuser via query: {query}"
+            )
+            user_record: Record = await connection.fetchrow(query, id)
         if not user_record:
             # TODO: handle exceptions in general
             raise Exception(f"User {id} not found")

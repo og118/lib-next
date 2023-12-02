@@ -84,7 +84,7 @@ async def create_tranasction_table(connection):
         id                      SERIAL PRIMARY KEY,
         user_id                 INT NOT NULL,
         book_id                 INT NOT NULL,
-        status                  frappe.transaction_status NOT NULL DEFAULT 'PENDING',
+        status                  {schema_name}.transaction_status NOT NULL DEFAULT 'PENDING',
         created_at              TIMESTAMP NOT NULL DEFAULT NOW(),
         updated_at              TIMESTAMP NOT NULL DEFAULT NOW(),
         CONSTRAINT              transaction_mapping_user_id_fk FOREIGN KEY (user_id) REFERENCES {schema_name}.user (id),
