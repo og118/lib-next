@@ -6,6 +6,7 @@ from asyncpg import Pool, Record
 from app.database import DatabaseConnectionPool
 from app.models.book import Book
 from app.utils.deserialization_utils import deserialize_records
+from app.utils.logging_utils import logger
 
 
 class BookService:
@@ -35,7 +36,7 @@ class BookService:
         vals = [f"${x[0]+1}" for x in enumerate(keys)]
         val_fields = ", ".join(vals)
 
-        print(f"Creating new book: {create_book_input_dict}")
+        logger.info(f"Creating new book: {create_book_input_dict}")
         query = (
             f"INSERT INTO {self.schema}.book "
             f"({key_fields}) "
@@ -46,12 +47,12 @@ class BookService:
 
         async with self.pool.acquire() as connection:
             async with connection.transaction():
-                print(
+                logger.info(
                     f"Acquired connection and opened transaction to insert new book via query: {query}"
                 )
                 book_record: Record = await connection.fetchrow(query, *params)
 
-        print(
+        logger.info(
             f"Book: {create_book_input_dict['title']} successfully inserted in the db"
         )
         return deserialize_records(book_record, Book)
@@ -69,7 +70,7 @@ class BookService:
         query = f"SELECT * FROM {self.schema}.book WHERE id = $1;"
 
         async with self.pool.acquire() as connection:
-            print(
+            logger.info(
                 f"Acquired connection and opened transaction to fetch book via query: {query}"
             )
             book_record: Record = await connection.fetchrow(query, id)
@@ -100,7 +101,7 @@ class BookService:
             book: pydantic model object of the book. See app.models.book.Book for more details.
         """
 
-        print(f"Updating book: {update_book_input_dict}")
+        logger.info(f"Updating book: {update_book_input_dict}")
 
         params: List[Any] = [val for val in update_book_input_dict.values()]
         key_fields: List[str] = list(
@@ -117,7 +118,7 @@ class BookService:
 
         async with self.pool.acquire() as connection:
             async with connection.transaction():
-                print(
+                logger.info(
                     f"Acquired connection and opened transaction to update book via query: {query}"
                 )
                 book_record: Record = await connection.fetchrow(query, id, *params)
@@ -140,7 +141,7 @@ class BookService:
 
         async with self.pool.acquire() as connection:
             async with connection.transaction():
-                print(
+                logger.info(
                     f"Acquired connection and opened transaction to delete book via query: {query}"
                 )
                 book_record: Record = await connection.fetchrow(query, id)

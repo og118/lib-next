@@ -6,6 +6,7 @@ from asyncpg import Pool, Record
 from app.database import DatabaseConnectionPool
 from app.models.user import User
 from app.utils.deserialization_utils import deserialize_records
+from app.utils.logging_utils import logger
 
 
 class UserService:
@@ -24,7 +25,7 @@ class UserService:
             user: pydantic model object of the user. See app.models.user.User for more details.
         """
 
-        print(f"Creating new user: {email}")
+        logger.info(f"Creating new user: {email}")
         query = (
             f"INSERT INTO {self.schema}.user (name, email) "
             f"VALUES ($1, $2) RETURNING *;"
@@ -34,12 +35,12 @@ class UserService:
 
         async with self.pool.acquire() as connection:
             async with connection.transaction():
-                print(
+                logger.info(
                     f"Acquired connection and opened transaction to insert new user via query: {query}"
                 )
                 user_record: Record = await connection.fetchrow(query, *params)
 
-        print(f"User: {email} successfully inserted in the db")
+        logger.info(f"User: {email} successfully inserted in the db")
         return deserialize_records(user_record, User)
 
     async def get_user_by_id(self, id: int) -> User:
@@ -56,7 +57,7 @@ class UserService:
 
         async with self.pool.acquire() as connection:
             async with connection.transaction():
-                print(
+                logger.info(
                     f"Acquired connection and opened transaction to fetch uuser via query: {query}"
                 )
                 user_record: Record = await connection.fetchrow(query, id)
@@ -80,7 +81,7 @@ class UserService:
 
         async with self.pool.acquire() as connection:
             async with connection.transaction():
-                print(
+                logger.info(
                     f"Acquired connection and opened transaction to update user via query: {query}"
                 )
                 user_record: Record = await connection.fetchrow(query, name, id)
@@ -103,7 +104,7 @@ class UserService:
 
         async with self.pool.acquire() as connection:
             async with connection.transaction():
-                print(
+                logger.info(
                     f"Acquired connection and opened transaction to delete user via query: {query}"
                 )
                 user_record: Record = await connection.fetchrow(query, id)

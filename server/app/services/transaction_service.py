@@ -6,6 +6,7 @@ from app.database import DatabaseConnectionPool
 from app.entities.transctions import TransactionStatus
 from app.models.transactions import Transactions
 from app.utils.deserialization_utils import deserialize_records
+from app.utils.logging_utils import logger
 
 
 class TransactionService:
@@ -13,17 +14,16 @@ class TransactionService:
         self.pool: Pool = DatabaseConnectionPool.get()
         self.schema: str = os.environ.get("DB_SCHEMA")
 
-    async def validate_book_stock(self, user_id, book_id) -> bool:
+    async def validate_book_stock(self, book_id) -> bool:
         """Validates if the book is in stock.
 
         Args:
-            user_id: id of the user
             book_id: id of the book
 
         Returns:
             True if book is in stock else False
         """
-        print(f"Validating book stock for book_id: {book_id}")
+        logger.info(f"Validating book stock for book_id: {book_id}")
 
         query = f"""
         WITH book_stock AS (
@@ -41,12 +41,12 @@ class TransactionService:
 """
 
         async with self.pool.acquire() as connection:
-            print(
+            logger.info(
                 f"Acquired connection and opened transaction to validate book stock via query: {query}"
             )
             book_stock_count = await connection.fetchrow(query, book_id)
 
-        print(f"Book stock count: {book_stock_count[0]}")
+        logger.info(f"Book stock count: {book_stock_count[0]}")
         return book_stock_count[0] > 0
 
     async def validate_transaction_possible(self, user_id) -> bool:
@@ -62,7 +62,7 @@ class TransactionService:
         Returns:
             True if transaction is possible else False
         """
-        print(f"Validating transaction for user_id: {user_id}")
+        logger.info(f"Validating transaction for user_id: {user_id}")
 
         query = f"""
         SELECT SUM(DATE(NOW()) - DATE(created_at)) * $1 
@@ -73,7 +73,7 @@ class TransactionService:
         """
 
         async with self.pool.acquire() as connection:
-            print(
+            logger.info(
                 f"Acquired connection and opened transaction to validate transaction via query: {query}"
             )
             transaction_possible = await connection.fetchrow(
@@ -92,7 +92,7 @@ class TransactionService:
         Returns:
             book: pydantic model object of the book. See app.models.book.Book for more details.
         """
-        print(f"Creating new transaction for book_id: {book_id} and user_id: {user_id}")
+        logger.info(f"Creating new transaction for book_id: {book_id} and user_id: {user_id}")
 
         query = f"""
         INSERT INTO {self.schema}.transaction
@@ -102,12 +102,12 @@ class TransactionService:
         """
         async with self.pool.acquire() as connection:
             async with connection.transaction():
-                print(
+                logger.info(
                     f"Acquired connection and opened transaction to insert new transaction via query: {query}"
                 )
                 transaction_record = await connection.fetchrow(query, book_id, user_id)
 
-        print(f"Transaction: {transaction_record} successfully inserted in the db")
+        logger.info(f"Transaction: {transaction_record} successfully inserted in the db")
         return deserialize_records(transaction_record, Transactions)
 
     async def get_all_transactions(self):
@@ -117,18 +117,18 @@ class TransactionService:
         Returns:
             transactions: list of pydantic model objects of the transactions. See app.models.transactions.Transactions for more details.
         """
-        print(f"Getting all transactions")
+        logger.info(f"Getting all transactions")
 
         query = f"""
         SELECT * FROM {self.schema}.transaction
         """
         async with self.pool.acquire() as connection:
-            print(
+            logger.info(
                 f"Acquired connection and opened transaction to get all transactions via query: {query}"
             )
             transaction_records = await connection.fetch(query)
 
-        print(f"Transactions: {transaction_records} successfully fetched from the db")
+        logger.info(f"Transactions: {transaction_records} successfully fetched from the db")
         return deserialize_records(transaction_records, Transactions)
 
     async def get_transaction(self, transaction_id: int):
@@ -141,19 +141,19 @@ class TransactionService:
         Returns:
             transaction: pydantic model object of the transaction. See app.models.transactions.Transactions for more details.
         """
-        print(f"Getting transaction with id: {transaction_id}")
+        logger.info(f"Getting transaction with id: {transaction_id}")
 
         query = f"""
         SELECT * FROM {self.schema}.transaction
         WHERE id = $1
         """
         async with self.pool.acquire() as connection:
-            print(
+            logger.info(
                 f"Acquired connection and opened transaction to get transaction via query: {query}"
             )
             transaction_record = await connection.fetchrow(query, transaction_id)
 
-        print(f"Transaction: {transaction_record} successfully fetched from the db")
+        logger.info(f"Transaction: {transaction_record} successfully fetched from the db")
         return deserialize_records(transaction_record, Transactions)
 
     async def update_transaction_status(
@@ -169,7 +169,7 @@ class TransactionService:
         Returns:
             transaction: pydantic model object of the transaction. See app.models.transactions.Transactions for more details.
         """
-        print(f"Updating transaction with id: {transaction_id}")
+        logger.info(f"Updating transaction with id: {transaction_id}")
 
         query = f"""
         UPDATE {self.schema}.transaction
@@ -179,14 +179,14 @@ class TransactionService:
         """
         async with self.pool.acquire() as connection:
             async with connection.transaction():
-                print(
+                logger.info(
                     f"Acquired connection and opened transaction to update transaction via query: {query}"
                 )
                 transaction_record = await connection.fetchrow(
                     query, status.value, transaction_id
                 )
 
-        print(f"Transaction: {transaction_record} successfully updated in the db")
+        logger.info(f"Transaction: {transaction_record} successfully updated in the db")
         return deserialize_records(transaction_record, Transactions)
 
     async def get_all_transactions_for_user(self, user_id: int):
@@ -199,19 +199,19 @@ class TransactionService:
         Returns:
             transactions: list of pydantic model objects of the transactions. See app.models.transactions.Transactions for more details.
         """
-        print(f"Getting all transactions for user_id: {user_id}")
+        logger.info(f"Getting all transactions for user_id: {user_id}")
 
         query = f"""
         SELECT * FROM {self.schema}.transaction
         WHERE user_id = $1
         """
         async with self.pool.acquire() as connection:
-            print(
+            logger.info(
                 f"Acquired connection and opened transaction to get all transactions for user via query: {query}"
             )
             transaction_records = await connection.fetch(query, user_id)
 
-        print(f"Transactions: {transaction_records} successfully fetched from the db")
+        logger.info(f"Transactions: {transaction_records} successfully fetched from the db")
         return deserialize_records(transaction_records, Transactions)
 
     async def get_all_transactions_for_book(self, book_id: int):
@@ -224,17 +224,17 @@ class TransactionService:
         Returns:
             transactions: list of pydantic model objects of the transactions. See app.models.transactions.Transactions for more details.
         """
-        print(f"Getting all transactions for book_id: {book_id}")
+        logger.info(f"Getting all transactions for book_id: {book_id}")
 
         query = f"""
         SELECT * FROM {self.schema}.transaction
         WHERE book_id = $1
         """
         async with self.pool.acquire() as connection:
-            print(
+            logger.info(
                 f"Acquired connection and opened transaction to get all transactions for book via query: {query}"
             )
             transaction_records = await connection.fetch(query, book_id)
 
-        print(f"Transactions: {transaction_records} successfully fetched from the db")
+        logger.info(f"Transactions: {transaction_records} successfully fetched from the db")
         return deserialize_records(transaction_records, Transactions)

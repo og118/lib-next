@@ -4,10 +4,10 @@ import asyncpg
 from asyncpg import create_pool
 
 from app.utils.database_utils import generate_dsn
+from app.utils.logging_utils import logger
 
 
 class DatabaseConnectionPool:
-
     instance: asyncpg.Pool = None
 
     def __init__(self):
@@ -26,16 +26,16 @@ class DatabaseConnectionPool:
         """
 
         if cls.instance:
-            print("Database connection pool instance already initialised")
+            logger.info("Database connection pool instance already initialised")
             return
 
-        print("Creating database connection pool instance")
+        logger.info("Creating database connection pool instance")
         cls.instance = await create_pool(
             dsn=generate_dsn(),
             min_size=5,
             max_size=40,
-            timeout=int(environ.get('CONNECTION_TIMEOUT', 10)),
-            command_timeout=int(environ.get('QUERY_TIMEOUT', 60)),
+            timeout=int(environ.get("CONNECTION_TIMEOUT", 10)),
+            command_timeout=int(environ.get("QUERY_TIMEOUT", 60)),
             max_inactive_connection_lifetime=480,
         )
 
@@ -47,9 +47,11 @@ class DatabaseConnectionPool:
             ValueError: if the connection pool instance has not been initialised before being requested for
         """
 
-        print("Acquiring database connection pool instance")
+        logger.info("Acquiring database connection pool instance")
         if not cls.instance:
-            raise ValueError("Connection pool instance was not initialised on application startup")
+            raise ValueError(
+                "Connection pool instance was not initialised on application startup"
+            )
         return cls.instance
 
     @classmethod
@@ -59,5 +61,5 @@ class DatabaseConnectionPool:
         Invoked automatically at application shutdown.
         """
 
-        print(f"Closing all connections in the connection pool")
+        logger.info(f"Closing all connections in the connection pool")
         await cls.instance.close()

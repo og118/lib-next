@@ -4,18 +4,19 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import DatabaseConnectionPool
 from app.routes import router
+from app.utils.logging_utils import logger
 
 
 async def database_connection(app: FastAPI):
-    print("Initialising database connection pool")
+    logger.info("Initialising database connection pool")
     load_status = load_dotenv(dotenv_path=".env")
-    print(f"Loaded .env file: {load_status}")
+    logger.info(f"Loaded .env file: {load_status}")
     await DatabaseConnectionPool.create()
-    print("Initialized database connection pool")
+    logger.info("Initialized database connection pool")
 
     yield
 
-    print("Closing database connection pool")
+    logger.info("Closing database connection pool")
     await DatabaseConnectionPool.close()
 
 
