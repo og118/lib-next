@@ -22,6 +22,19 @@ export const fetchBook = async (id: number) => {
   }
 };
 
+export const fetchBookFromFrappeApi = async (limit: number = 10, includes: string = '') => {
+  try { 
+    let filterQuery = `?limit=${limit}`;
+    if(includes !== '') filterQuery+=`&includes=${includes}`
+
+    const response = await axios.get(BACKEND_URL + `/books/import/frappe${filterQuery}`);
+    return response.data;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+
 export const createBook = async (book: BookInput) => {
   try {
     const response = await axios.post(BACKEND_URL + "/books", book);

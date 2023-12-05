@@ -7,6 +7,7 @@ import { Book } from "../models/book";
 import CreateBookModal from "../components/Books/CreateBookModal";
 import LoadingScreen from "../components/LoadingScreen";
 import DeleteBookModal from "../components/Books/DeleteBookModal";
+import ImportBookModal from "../components/Books/ImportBookModal";
 
 const BooksPage = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -15,6 +16,7 @@ const BooksPage = () => {
   const [loading, setLoading] = useState(true);
 
   const [openCreateBookDialog, setOpenCreateBookDialog] = useState(false);
+  const [openImportBookDialog, setOpenImportBookDialog] = useState(false);
   const [openEditBookDialog, setOpenEditBookDialog] = useState(false);
   const [bookToEdit, setBookToEdit] = useState<Book | undefined>(undefined);
   const [openDeleteBookDialog, setOpenDeleteBookDialog] = useState(false);
@@ -38,7 +40,7 @@ const BooksPage = () => {
 
   return (
     <DashboardContainer>
-      <LoadingScreen loading={loading}/>
+      <LoadingScreen loading={loading} />
       <h1>Books</h1>
       <Box
         sx={{
@@ -48,8 +50,12 @@ const BooksPage = () => {
         }}
       >
         <Stack direction="row" spacing={1}>
-          <Button onClick={() => setOpenCreateBookDialog(true)}>Create Book</Button>
-          <Button>Import Book</Button>
+          <Button onClick={() => setOpenCreateBookDialog(true)}>
+            Create Book
+          </Button>
+          <Button onClick={() => setOpenImportBookDialog(true)}>
+            Import Book
+          </Button>
         </Stack>
       </Box>
       <Table>
@@ -67,16 +73,24 @@ const BooksPage = () => {
               <td>{book.publisher}</td>
               <td>{book.stock_quantity}</td>
               <td>
-                <Button onClick={() => {
-                  setBookToEdit(book);
-                  setOpenDeleteBookDialog(true);
-                }}>Delete</Button>
+                <Button
+                  onClick={() => {
+                    setBookToEdit(book);
+                    setOpenDeleteBookDialog(true);
+                  }}
+                >
+                  Delete
+                </Button>
               </td>
               <td>
-                <Button onClick={() => {
-                  setBookToEdit(book);
-                  setOpenEditBookDialog(true);
-                }}>Edit</Button>
+                <Button
+                  onClick={() => {
+                    setBookToEdit(book);
+                    setOpenEditBookDialog(true);
+                  }}
+                >
+                  Edit
+                </Button>
               </td>
             </tr>
           ))}
@@ -92,14 +106,23 @@ const BooksPage = () => {
         }}
         book={bookToEdit}
       />
-      {bookToEdit && <DeleteBookModal
-        open={openDeleteBookDialog}
+      <ImportBookModal
+        open={openImportBookDialog}
         onClose={() => {
           handleFetchBooks();
-          setOpenDeleteBookDialog(false);
+          setOpenImportBookDialog(false);
         }}
-        book={bookToEdit}
-      />}
+      />
+      {bookToEdit && (
+        <DeleteBookModal
+          open={openDeleteBookDialog}
+          onClose={() => {
+            handleFetchBooks();
+            setOpenDeleteBookDialog(false);
+          }}
+          book={bookToEdit}
+        />
+      )}
     </DashboardContainer>
   );
 };
