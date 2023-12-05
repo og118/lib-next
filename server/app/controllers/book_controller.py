@@ -1,8 +1,11 @@
+from datetime import datetime
+from typing import List, Optional
 from app.entities.book import CreateBookInput, UpdateBookInput
-from app.models.book import Book
+from app.models.book import Book, FrappeBook
 from app.services.book_service import BookService
 from app.utils.logging_utils import logger
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
+import requests
 
 router: APIRouter = APIRouter()
 
@@ -15,6 +18,38 @@ async def create_book(create_book_input: CreateBookInput):
     )
     logger.info(f"Successfully created a new book entry with id: {book.id}")
     return book
+
+
+@router.get(path="/import/frappe")
+async def fetch_book_from_frappe_api(limit: int = Query(10), includes: Optional[str] = Query(None)):
+    logger.info(f"Recieved a request to import books from frappe API with following filters {limit, includes}")
+
+    url: str = "https://frappe.io/api/method/frappe-library"
+    page_size: int = 20
+    page: int = limit//page_size+1
+    params_arr: List[dict] = [{"page": pg+1, "title": includes} for pg in range(page)]
+
+    try:
+        processed_response: List[dict] = []
+        for params in params_arr:
+            logger.info(f"Fetching from Frappe API with the following params: {params['page'], params['title']}")
+            response = requests.get(url, params=params)
+            processed_response+=response.json()['message']
+
+        # Process json from the response 
+        for item in processed_response:
+            item['publication_date'] = datetime.strptime(item['publication_date'], f"%m/%d/%Y")
+            item['authors'] = item['authors'].split('/')
+        
+        # De-serialize the dictionary into List[FrappeBook] model
+        books: List[FrappeBook] = [FrappeBook(**{k.strip(): v for k, v in book_dict.items() if k.strip() in FrappeBook.__annotations__}) \
+                        for book_dict in processed_response]
+
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error making API request: {e}")
+
+    logger.info(f"Successfully fetched {len(books)} new books from frappe API")
+    return {'count': len(books[:limit]), "books": books[:limit]}
 
 
 @router.get(path="")
