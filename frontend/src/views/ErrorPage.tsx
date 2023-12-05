@@ -1,5 +1,5 @@
 import { Button, Container, SvgIcon, Typography } from "@mui/joy";
-import { ReactComponent as FailSvg } from "../assets/fail.svg";
+// import { ReactComponent as FailSvg } from "../assets/fail.svg";
 import { useRouteError } from "react-router-dom";
 
 export default function ErrorPage() {
@@ -21,7 +21,8 @@ export default function ErrorPage() {
           height: "40%",
         }}
       >
-        <FailSvg />
+        {/* TODO: fix the icon import */}
+        {/* <FailSvg /> */}
       </SvgIcon>
       <Typography sx={{ fontStyle: "italic", mt: 5 }}>
         Unicorn speaks. “The page you are looking for isn’t here. It might be
