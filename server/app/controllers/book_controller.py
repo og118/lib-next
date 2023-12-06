@@ -6,6 +6,7 @@ from app.services.book_service import BookService
 from app.utils.logging_utils import logger
 from fastapi import APIRouter, Query
 import requests
+from asyncpg import UniqueViolationError
 
 router: APIRouter = APIRouter()
 
@@ -13,11 +14,37 @@ router: APIRouter = APIRouter()
 @router.post(path="")
 async def create_book(create_book_input: CreateBookInput):
     logger.info(f"Recieved a request to create a new book entry")
-    book: Book = await BookService().create_new_book(
-        create_book_input.model_dump(exclude_none=True)
-    )
+    try:
+        book: Book = await BookService().create_new_book(
+            create_book_input.model_dump(exclude_none=True)
+        )
+    except UniqueViolationError as e:
+        logger.exception(f"UniqueViolationError occurred while creating new user: {create_book_input.dict()}")
+        return {"message": e.as_dict()['detail']}
+
     logger.info(f"Successfully created a new book entry with id: {book.id}")
     return book
+
+
+@router.post(path="/batch")
+async def create_book_batch(create_book_batch_input: List[CreateBookInput]):
+    logger.info(f"Recieved a request to create a new book entry")
+    try:
+        books_input = [x.model_dump(exclude_none=True) for x in create_book_batch_input]
+        books: List[Book] = await BookService().create_new_book_batch(
+            books_input
+        )
+
+
+        n_duplicates = len(create_book_batch_input)-len(books)
+        logger.info(f"Found {n_duplicates} duplicates. Successfully created {len(books)}")
+        return {
+                "count_duplicates": n_duplicates, 
+                "count_unique":len(books), 
+                "books": books
+                }
+    except Exception as e:
+        return {'message': 'Something went wrong'}
 
 
 @router.get(path="/import/frappe")
