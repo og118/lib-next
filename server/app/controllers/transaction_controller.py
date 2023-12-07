@@ -10,20 +10,25 @@ router: APIRouter = APIRouter()
 @router.post(path="")
 async def create_transaction(create_transaction_input: CreateTransactionInput):
     logger.info(f"Creating new transaction: {create_transaction_input}")
+
     user_id: int = create_transaction_input.user_id
     book_id: int = create_transaction_input.book_id
+
     transaction_service = TransactionService()
+
     logger.info("Validating that the transaction is possible")
     is_in_stock: bool = await transaction_service.validate_book_stock(book_id)
     if not is_in_stock:
-        raise Exception("Book is not in stock")
+        return {"message": "Book is not in stock"}
     logger.info("Validated that the book is in stock")
+
     is_transaction_possible: bool = (
         await transaction_service.validate_transaction_possible(user_id)
     )
     if not is_transaction_possible:
-        raise Exception("Transaction not possible")
+        return {"message": "User has to settle their credit first"}
     logger.info("Validated that the transaction is possible")
+    
     transaction = await transaction_service.create_transaction(user_id, book_id)
     return transaction
 

@@ -124,6 +124,6 @@ async def delete_book(id: int):
         book: Book = await BookService().delete_book_by_id(id)
     except Exception as e:
         # Implement better exception handling
-        return {}
+        return {'message': 'Could not delete book as it is involved in a transaction'}
     logger.info(f"Successfully deleted book with id: {id}")
     return book

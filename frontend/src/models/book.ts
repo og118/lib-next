@@ -13,6 +13,10 @@ export type Book = {
     updated_at: string;
 }
 
+export const defaultBook = {
+    stock_quantity: 0
+}
+
 export type BookInput = {
     title: string;
     authors: string[];

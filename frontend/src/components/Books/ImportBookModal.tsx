@@ -13,8 +13,13 @@ import {
   Typography,
 } from "@mui/joy";
 import { useEffect, useState } from "react";
-import { Book, BookInput } from "../../models/book";
-import { createBook, fetchBookFromFrappeApi, updateBook } from "../../api/book";
+import { Book, BookInput, defaultBook } from "../../models/book";
+import {
+  createBook,
+  createBooksInBatch,
+  fetchBookFromFrappeApi,
+  updateBook,
+} from "../../api/book";
 import { useSnackbar } from "notistack";
 import { NumericFormatAdapter } from "../NumericFormatter";
 
@@ -298,7 +303,7 @@ const ImportBookModal = (props: ImportBookModalProps) => {
             }}
           >
             <Button
-              onClick={() => {
+              onClick={async () => {
                 if (selectedBookIndices.size === 0) {
                   enqueueSnackbar("Please select atleast one book to proceed", {
                     variant: "error",
@@ -306,7 +311,14 @@ const ImportBookModal = (props: ImportBookModalProps) => {
                   });
                   return;
                 }
-                
+
+                const books: Array<Book> = [];
+                selectedBookIndices.forEach((v, k) => {
+                  importedBooks[k].stock_quantity = 0;
+                  books.push(importedBooks[k]);
+                });
+
+                const booksResponse = await createBooksInBatch(books);
               }}
             >
               Add to Library
