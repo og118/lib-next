@@ -37,3 +37,15 @@ export const createTransaction = async (transaction: TransactionInput) => {
     return null;
   }
 };
+
+export const fetchTransactionsByUserId = async (user_id: number) => {
+  try {
+    const response = await axios.get(
+      BACKEND_URL + "/transactions/users/" + user_id,
+    );
+    return response.data;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};

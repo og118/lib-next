@@ -20,6 +20,7 @@ import DeleteUserModal from "../components/Users/DeleteUserModal";
 import { fetchAllUsers } from "../api/user";
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import UserModal from "../components/Users/UserModal";
 
 const UsersPage = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -30,6 +31,7 @@ const UsersPage = () => {
   const [openEditUserDialog, setOpenEditUserDialog] = useState(false);
   const [userToEdit, setUserToEdit] = useState<User | undefined>(undefined);
   const [openDeleteUserDialog, setOpenDeleteUserDialog] = useState(false);
+  const [openUserModal, setOpenUserModal] = useState(false);
 
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [pageNumber, setPageNumber] = useState<number>(1);
@@ -94,7 +96,14 @@ const UsersPage = () => {
             )
             .map((user) => (
               <tr key={user.id}>
-                <td>{user.name}</td>
+                <td
+                  onClick={() => {
+                    setUserToEdit(user);
+                    setOpenUserModal(true);
+                  }}
+                >
+                  {user.name}
+                </td>
                 <td>{user.email}</td>
                 <td>
                   <Box sx={{ display: "flex", gap: 1 }}>
@@ -183,6 +192,13 @@ const UsersPage = () => {
           </tr>
         </tfoot>
       </Table>
+      <UserModal
+        open={openUserModal}
+        user={userToEdit}
+        onClose={() => {
+          setOpenUserModal(false);
+        }}
+      />
       <CreateUserModal
         open={openCreateUserDialog || openEditUserDialog}
         isEditing={openEditUserDialog}
