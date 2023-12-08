@@ -2,6 +2,8 @@
 
 LibNext is an open-source Library Management Suite designed to track book availability and user credit in libraries efficiently.
 
+![image](https://github.com/og118/lib-next/assets/63297841/ed428704-1f50-46e6-aa22-c288534eb74d)
+
 ## Features
 - **Create, Update, and Delete Books:** Librarians can easily add new books, update existing book details, and remove outdated or irrelevant entries.
 - **Create, Update, and Delete Users:** LibNext provides tools for librarians to maintain an updated user database, making it easy to manage library memberships.
