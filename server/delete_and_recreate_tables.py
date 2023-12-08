@@ -47,6 +47,7 @@ async def create_user_table(connection):
         name            VARCHAR(64) NULL,
         email           VARCHAR(64) UNIQUE NOT NULL,
         created_at      TIMESTAMP NOT NULL DEFAULT NOW()
+        updated_at      TIMESTAMP NOT NULL DEFAULT NOW(),
     );"""
 
     print(f"Executing query: {query}")

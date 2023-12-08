@@ -34,7 +34,11 @@ export const createUser = async (user: UserInput) => {
 
 export const updateUser = async (id: number, user: UserInput) => {
   try {
-    const response = await axios.patch(BACKEND_URL + `/users/${id}`, user);
+    const body = {
+      email: user.email,
+      name: user.name
+    }
+    const response = await axios.patch(BACKEND_URL + `/users/${id}`, body);
     return response.data;
   } catch (error) {
     console.log(error);

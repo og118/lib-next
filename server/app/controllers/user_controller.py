@@ -1,4 +1,4 @@
-from app.entities.user import CreateUserInput
+from app.entities.user import CreateUserInput, UpdateUserInput
 from app.models.user import User
 from app.services.user_service import UserService
 from app.utils.logging_utils import logger
@@ -44,10 +44,17 @@ async def get_all_users():
 
 
 @router.patch(path="/{id}")
-async def update_user(id: int, name: str):
+async def update_user(id: int, update_user_input: UpdateUserInput):
     logger.info(f"Recieved a request to update user with id: {id}")
+
+    name = update_user_input.name
+    email = update_user_input.email
+    
+    if name is None and email is None:
+        return {'message': 'Nothing to update'}
+
     try:
-        user: User = await UserService().update_user_by_id(id, name)
+        user: User = await UserService().update_user_by_id(id, update_user_input.model_dump(exclude_none=True))
     except Exception as e:
         # Implement better exception handling
         logger.error(e)

@@ -11,3 +11,6 @@ class User(BaseModel):
     created_at: datetime = Field(
         ..., description="Datetime when the user signed up to the platform"
     )
+    updated_at: datetime = Field(
+        ..., description="Datetime when the user information was last updated"
+    )

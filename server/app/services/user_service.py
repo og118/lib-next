@@ -1,5 +1,5 @@
 import os
-from typing import Tuple, List
+from typing import Dict, Tuple, List
 
 from app.database import DatabaseConnectionPool
 from app.models.user import User
@@ -82,25 +82,37 @@ class UserService:
             raise Exception(f"User {id} not found")
         return deserialize_records(user_record, User)
 
-    async def update_user_by_id(self, id: int, name: str) -> User:
+    async def update_user_by_id(self, id: int, update_user_input_dict: Dict[str, str]) -> User:
         """Updates a user with given id from the database.
 
         Args:
             id:  id of the user
             name: name of the user
+            email: email of the user
 
         Returns:
             user: pydantic model object of the user. See app.models.user.User for more details.
         """
 
-        query = f"UPDATE {self.schema}.user SET name = $1 WHERE id = $2 RETURNING *;"
+        params: List[str] = [val for val in update_user_input_dict.values()]
+        key_fields: List[str] = list(
+            map(
+                lambda x: f"{x[1]} = ${x[0] + 2}",
+                enumerate(update_user_input_dict.keys()),
+            )
+        )
+        key_fields.insert(0, "updated_at = NOW()")
+        update_clause: str = ", ".join(key_fields)
+        query = (
+            f"UPDATE {self.schema}.user SET {update_clause} WHERE id = $1 RETURNING *;"
+        )
 
         async with self.pool.acquire() as connection:
             async with connection.transaction():
                 logger.info(
                     f"Acquired connection and opened transaction to update user via query: {query}"
                 )
-                user_record: Record = await connection.fetchrow(query, name, id)
+                user_record: Record = await connection.fetchrow(query, id, *params)
         if not user_record:
             raise Exception(f"User {id} not found")
 
