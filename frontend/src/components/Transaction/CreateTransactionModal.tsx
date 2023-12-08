@@ -16,6 +16,7 @@ import { Book } from "../../models/book";
 import { TransactionInput } from "../../models/transaction";
 import { createTransaction } from "../../api/transaction";
 import { NumericFormatAdapter } from "../NumericFormatter";
+import { errorToast, successToast } from "../../utils/helper/snackBars";
 
 interface CreateTransactionModalProps {
   open: boolean;
@@ -30,8 +31,6 @@ const initialValues: TransactionInput = {
 };
 
 const CreateTransactionModal = (props: CreateTransactionModalProps) => {
-  const { enqueueSnackbar } = useSnackbar();
-
   const [transaction, setTransaction] =
     useState<TransactionInput>(initialValues);
   const [quantity, setQuantity] = useState<number>(0);
@@ -46,24 +45,15 @@ const CreateTransactionModal = (props: CreateTransactionModalProps) => {
 
   const handleValidateUser = () => {
     if (transaction.user_id === -1) {
-      enqueueSnackbar("Please select a user", {
-        variant: "error",
-        preventDuplicate: true,
-      });
+      errorToast("Please select a user");
       return false;
     }
     if (transaction.book_id === -1) {
-      enqueueSnackbar("Please select a book", {
-        variant: "error",
-        preventDuplicate: true,
-      });
+      errorToast("Please select a book");
       return false;
     }
     if (quantity <= 0) {
-      enqueueSnackbar("Please select number of books issued", {
-        variant: "error",
-        preventDuplicate: true,
-      });
+      errorToast("Please select number of books issued");
       return false;
     }
     return true;
@@ -75,7 +65,7 @@ const CreateTransactionModal = (props: CreateTransactionModalProps) => {
       setLoading(false);
       return;
     }
-    let data = null
+    let data = null;
     for (let i = 0; i < quantity; i++) {
       data = await createTransaction(transaction);
       if (!data) {
@@ -83,17 +73,11 @@ const CreateTransactionModal = (props: CreateTransactionModalProps) => {
       }
     }
     if (!data) {
-      enqueueSnackbar("Something went wrong. Please try again later", {
-        variant: "error",
-        preventDuplicate: true,
-      });
+      errorToast("Failed to create a transaction");
       setLoading(false);
-      return
+      return;
     }
-    enqueueSnackbar("Issued the book successfully", {
-      variant: "success",
-      preventDuplicate: true,
-    });
+    successToast("Issued the book successfully");
     handleClose();
   };
 

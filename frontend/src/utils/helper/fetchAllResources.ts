@@ -1,4 +1,3 @@
-import { enqueueSnackbar } from "notistack";
 import { Dispatch, SetStateAction } from "react";
 import { fetchAllBooks } from "../../api/book";
 import { fetchAllTransactions } from "../../api/transaction";
@@ -6,6 +5,7 @@ import { fetchAllUsers } from "../../api/user";
 import { Book } from "../../models/book";
 import { Transaction } from "../../models/transaction";
 import { User } from "../../models/user";
+import { errorToast } from "./snackBars";
 
 export const handleFetchAllData = async (
   setLoading: Dispatch<SetStateAction<boolean>>,
@@ -27,10 +27,7 @@ export const handleFetchAllUsers = async (
   setLoading(true);
   const data = await fetchAllUsers();
   if (!data) {
-    enqueueSnackbar("Something went wrong. Please try again later", {
-      variant: "error",
-      preventDuplicate: true,
-    });
+    return errorToast("Failed to fetch users");
   }
   setUsers(data ?? []);
   setLoading(false);
@@ -43,10 +40,7 @@ export const handleFetchAllBooks = async (
   setLoading(true);
   const data = await fetchAllBooks();
   if (!data) {
-    enqueueSnackbar("Something went wrong. Please try again later", {
-      variant: "error",
-      preventDuplicate: true,
-    });
+    return errorToast("Failed to fetch books");
   }
   setBooks(data ?? []);
   setLoading(false);
@@ -59,10 +53,7 @@ export const handleFetchAllTransactions = async (
   setLoading(true);
   const data = await fetchAllTransactions();
   if (!data) {
-    enqueueSnackbar("Something went wrong. Please try again later", {
-      variant: "error",
-      preventDuplicate: true,
-    });
+    return errorToast("Failed to fetch transactions");
   }
   setTransactions(data ?? []);
   setLoading(false);

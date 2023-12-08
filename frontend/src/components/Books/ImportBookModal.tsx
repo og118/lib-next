@@ -22,6 +22,7 @@ import {
 } from "../../api/book";
 import { useSnackbar } from "notistack";
 import { NumericFormatAdapter } from "../NumericFormatter";
+import { errorToast, successToast } from "../../utils/helper/snackBars";
 
 interface ImportBookModalProps {
   open: boolean;
@@ -29,8 +30,6 @@ interface ImportBookModalProps {
 }
 
 const ImportBookModal = (props: ImportBookModalProps) => {
-  const { enqueueSnackbar } = useSnackbar();
-
   const [loading, setLoading] = useState<boolean>(false);
   const [title, setTitle] = useState<string>("");
   const [limit, setLimit] = useState<number>(10);
@@ -44,27 +43,18 @@ const ImportBookModal = (props: ImportBookModalProps) => {
     setLoading(true);
     const data = await fetchBookFromFrappeApi(limit, title);
     if (!data) {
-      enqueueSnackbar("Something went wrong. Please try again later", {
-        variant: "error",
-        preventDuplicate: true,
-      });
+      errorToast("Something went wrong. Please try again later");
       setLoading(false);
       return;
     }
     setImportedBooks(data["books"]);
     setLoading(false);
-    enqueueSnackbar(`Fetched ${data["count"]} books`, {
-      variant: "success",
-      preventDuplicate: true,
-    });
+    successToast(`Fetched ${data["count"]} books`);
   };
 
   const handleAddImportedBooksToLibrary = async () => {
     if (selectedBookIndices.size === 0) {
-      enqueueSnackbar("Please select atleast one book to proceed", {
-        variant: "error",
-        preventDuplicate: true,
-      });
+      errorToast("Please select atleast one book to proceed");
       return;
     }
 
@@ -76,10 +66,11 @@ const ImportBookModal = (props: ImportBookModalProps) => {
     });
 
     const booksResponse = await createBooksInBatch(books);
-    enqueueSnackbar(`Added ${booksResponse['count_unique']} new books to library`, {
-      variant: "success",
-      preventDuplicate: true,
-    });
+    if (booksResponse) {
+      successToast(
+        `Added ${booksResponse["count_unique"]} new books to library`
+      );
+    }
     setLoading(false);
   };
 

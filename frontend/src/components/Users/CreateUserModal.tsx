@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { User, UserInput } from "../../models/user";
 import { createUser, updateUser } from "../../api/user";
 import { useSnackbar } from "notistack";
+import { errorToast, successToast } from "../../utils/helper/snackBars";
 
 interface CreateUserModalProps {
   open: boolean;
@@ -26,8 +27,6 @@ const initialValues: UserInput = {
 };
 
 const CreateUserModal = (props: CreateUserModalProps) => {
-  const { enqueueSnackbar } = useSnackbar();
-
   const [user, setUser] = useState<UserInput>(props.user ?? initialValues);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -41,21 +40,15 @@ const CreateUserModal = (props: CreateUserModalProps) => {
     setLoading(false);
     setUser(initialValues);
     props.onClose();
-  }
+  };
 
   const handleValidateUser = () => {
     if (user.name === "") {
-      enqueueSnackbar("Please provide a name", {
-        variant: "error",
-        preventDuplicate: true,
-      });
+      errorToast("Please provide a name");
       return false;
     }
     if (user.email === "") {
-      enqueueSnackbar("Please provide an email", {
-        variant: "error",
-        preventDuplicate: true,
-      });
+      errorToast("Please provide an email");
       return false;
     }
     return true;
@@ -75,19 +68,12 @@ const CreateUserModal = (props: CreateUserModalProps) => {
       data = await updateUser(props.user.id, user);
     } else data = await createUser(user);
     if (!data) {
-      enqueueSnackbar("Something went wrong. Please try again later", {
-        variant: "error",
-        preventDuplicate: true,
-      });
+      errorToast("Something went wrong. Please try again later");
       setLoading(false);
-      return
+      return;
     }
-    enqueueSnackbar(
-      `User ${props.isEditing ? "updated" : "created"} successfully`,
-      {
-        variant: "success",
-        preventDuplicate: true,
-      }
+    successToast(
+      `User ${props.isEditing ? "updated" : "created"} successfully`
     );
     handleClose();
   };

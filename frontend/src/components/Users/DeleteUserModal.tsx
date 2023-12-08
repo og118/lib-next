@@ -6,9 +6,9 @@ import {
   ModalDialog,
   Stack,
 } from "@mui/joy";
-import { useSnackbar } from "notistack";
 import { deleteUser } from "../../api/user";
 import { User } from "../../models/user";
+import { errorToast, successToast } from "../../utils/helper/snackBars";
 
 interface Props {
   user: User;
@@ -17,21 +17,13 @@ interface Props {
 }
 
 const DeleteUserModal = ({ user, open, onClose }: Props) => {
-  const { enqueueSnackbar } = useSnackbar();
-
   const handleDeleteUser = async () => {
     const data = await deleteUser(user.id);
     if (!data) {
-      enqueueSnackbar("Something went wrong. Please try again later", {
-        variant: "error",
-        preventDuplicate: true,
-      });
+      errorToast("Something went wrong. Please try again later");
       return;
     }
-    enqueueSnackbar("User deleted successfully", {
-      variant: "success",
-      preventDuplicate: true,
-    });
+    successToast("User deleted successfully");
     onClose();
   };
 

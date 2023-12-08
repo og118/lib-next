@@ -1,7 +1,15 @@
-import { Button, Modal, Typography, ModalClose, ModalDialog, Stack } from "@mui/joy";
+import {
+  Button,
+  Modal,
+  Typography,
+  ModalClose,
+  ModalDialog,
+  Stack,
+} from "@mui/joy";
 import { useSnackbar } from "notistack";
 import { deleteBook } from "../../api/book";
 import { Book } from "../../models/book";
+import { errorToast, successToast } from "../../utils/helper/snackBars";
 
 interface Props {
   book: Book;
@@ -10,22 +18,14 @@ interface Props {
 }
 
 const DeleteBookModal = ({ book, open, onClose }: Props) => {
-  const { enqueueSnackbar } = useSnackbar();
 
   const handleDeleteBook = async () => {
     const data = await deleteBook(book.id);
-    if (!data) {
-      enqueueSnackbar("Something went wrong. Please try again later", {
-        variant: "error",
-        preventDuplicate: true,
-      });
-      return;
+    if (data) {
+      successToast("Book deleted successfully");
     }
-    enqueueSnackbar("Book deleted successfully", {
-      variant: "success",
-      preventDuplicate: true,
-    });
     onClose();
+    return;
   };
 
   return (
@@ -34,7 +34,7 @@ const DeleteBookModal = ({ book, open, onClose }: Props) => {
         <ModalClose />
         <Typography level="h2">Delete Book</Typography>
         <Typography>
-          Are you sure you want to delete this book titled: {book.title} by {" "}
+          Are you sure you want to delete this book titled: {book.title} by{" "}
           {book.authors.join(",")}?
         </Typography>
         <Stack
@@ -56,4 +56,4 @@ const DeleteBookModal = ({ book, open, onClose }: Props) => {
   );
 };
 
-export default DeleteBookModal
+export default DeleteBookModal;

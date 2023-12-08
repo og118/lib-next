@@ -1,18 +1,15 @@
 import { Box, Stack, Button, Table, Typography } from "@mui/joy";
-import { useSnackbar } from "notistack";
 import { useState, useContext } from "react";
-import { fetchAllUsers } from "../api/user";
 import DashboardContainer from "../components/DashboardContainer";
 import LoadingScreen from "../components/LoadingScreen";
-import { fetchAllBooks } from "../api/book";
-import { fetchAllTransactions, updateTransaction } from "../api/transaction";
+import { updateTransaction } from "../api/transaction";
 import { Status } from "../models/transaction";
 import CreateTransactionModal from "../components/Transaction/CreateTransactionModal";
 import { AppContext, TAppContext } from "../context/AppContext";
 import { handleFetchAllTransactions } from "../utils/helper/fetchAllResources";
+import { errorToast } from "../utils/helper/snackBars";
 
 const TransactionPage = () => {
-  const { enqueueSnackbar } = useSnackbar();
   const { users, books, transactions, setTransactions } =
     useContext<TAppContext>(AppContext);
   const [loading, setLoading] = useState<boolean>(false);
@@ -24,10 +21,7 @@ const TransactionPage = () => {
     setLoading(true);
     const data = await updateTransaction(id, status);
     if (!data) {
-      enqueueSnackbar("Something went wrong. Please try again later", {
-        variant: "error",
-        preventDuplicate: true,
-      });
+      errorToast("Something went wrong. Please try again later")
     }
     await handleFetchAllTransactions(setLoading, setTransactions);
     setLoading(false);

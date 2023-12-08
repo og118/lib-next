@@ -14,6 +14,7 @@ import { Book, BookInput } from "../../models/book";
 import { createBook, updateBook } from "../../api/book";
 import { useSnackbar } from "notistack";
 import { NumericFormatAdapter } from "../NumericFormatter";
+import { errorToast, successToast } from "../../utils/helper/snackBars";
 
 interface CreateBookModalProps {
   open: boolean;
@@ -31,8 +32,6 @@ const initialValues: BookInput = {
 };
 
 const CreateBookModal = (props: CreateBookModalProps) => {
-  const { enqueueSnackbar } = useSnackbar();
-
   const [book, setBook] = useState<BookInput>(props.book ?? initialValues);
   const [currentAuthor, setCurrentAuthor] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -44,41 +43,27 @@ const CreateBookModal = (props: CreateBookModalProps) => {
   }, [props.book, props.isEditing]);
 
   const handleValidateBook = () => {
-    if (book.authors.length === 0) {
-      enqueueSnackbar("Please add at least one author", {
-        variant: "error",
-        preventDuplicate: true,
-      });
-      return false;
-    }
-    if (book.stock_quantity <= 0) {
-      enqueueSnackbar("Stock quantity must be greater than 0", {
-        variant: "error",
-        preventDuplicate: true,
-      });
-      return false;
-    }
-    if (book.num_pages <= 0) {
-      enqueueSnackbar("Page count must be greater than 0", {
-        variant: "error",
-        preventDuplicate: true,
-      });
-      return false;
-    }
     if (book.title === "") {
-      enqueueSnackbar("Title cannot be empty", {
-        variant: "error",
-        preventDuplicate: true,
-      });
+      errorToast("Title cannot be empty");
+      return false;
+    }
+    if (book.authors.length === 0) {
+      errorToast("Please add at least one author");
       return false;
     }
     if (book.publisher === "") {
-      enqueueSnackbar("Publisher cannot be empty", {
-        variant: "error",
-        preventDuplicate: true,
-      });
+      errorToast("Publisher cannot be empty");
       return false;
     }
+    if (book.stock_quantity <= 0) {
+      errorToast("Stock quantity must be greater than 0");
+      return false;
+    }
+    if (book.num_pages <= 0) {
+      errorToast("Page count must be greater than 0");
+      return false;
+    }
+
     return true;
   };
 
@@ -96,19 +81,12 @@ const CreateBookModal = (props: CreateBookModalProps) => {
       data = await updateBook(props.book.id, book);
     } else data = await createBook(book);
     if (!data) {
-      enqueueSnackbar("Something went wrong. Please try again later", {
-        variant: "error",
-        preventDuplicate: true,
-      });
+      errorToast("Something went wrong. Please try again later");
       setLoading(false);
       return;
     }
-    enqueueSnackbar(
-      `Book ${props.isEditing ? "updated" : "created"} successfully`,
-      {
-        variant: "success",
-        preventDuplicate: true,
-      }
+    successToast(
+      `Book ${props.isEditing ? "updated" : "created"} successfully`
     );
     setLoading(false);
     setBook(initialValues);
