@@ -35,7 +35,7 @@ const CreateBookModal = (props: CreateBookModalProps) => {
 
   const [book, setBook] = useState<BookInput>(props.book ?? initialValues);
   const [currentAuthor, setCurrentAuthor] = useState<string>("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (props.book && props.isEditing) {

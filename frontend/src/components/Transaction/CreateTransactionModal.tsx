@@ -34,8 +34,8 @@ const CreateTransactionModal = (props: CreateTransactionModalProps) => {
 
   const [transaction, setTransaction] =
     useState<TransactionInput>(initialValues);
-  const [quantity, setQuantity] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [quantity, setQuantity] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleClose = () => {
     setLoading(false);

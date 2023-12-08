@@ -29,7 +29,7 @@ const CreateUserModal = (props: CreateUserModalProps) => {
   const { enqueueSnackbar } = useSnackbar();
 
   const [user, setUser] = useState<UserInput>(props.user ?? initialValues);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (props.user && props.isEditing) {

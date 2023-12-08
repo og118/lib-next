@@ -5,7 +5,6 @@ import { ReactNode } from "react";
 const DashboardContainer = ({ children }: { children: ReactNode }) => {
   return (
     <>
-      <Header />
       <Container maxWidth="xl">{children}</Container>
     </>
   );

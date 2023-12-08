@@ -22,7 +22,7 @@ interface UserModalProps {
 const UserModal = (props: UserModalProps) => {
   const [dueAmount, setDueAmount] = useState<number | null>(null);
   const [transactions, setTransactions] = useState<Array<Transaction>>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     (async () => {

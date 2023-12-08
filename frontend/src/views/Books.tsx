@@ -11,7 +11,7 @@ import {
   Option,
 } from "@mui/joy";
 import DashboardContainer from "../components/DashboardContainer";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { fetchAllBooks } from "../api/book";
 import { useSnackbar } from "notistack";
 import { Book } from "../models/book";
@@ -21,12 +21,12 @@ import DeleteBookModal from "../components/Books/DeleteBookModal";
 import ImportBookModal from "../components/Books/ImportBookModal";
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import { TAppContext, AppContext } from "../context/AppContext";
+import { handleFetchAllBooks } from "../utils/helper/fetchAllResources";
 
 const BooksPage = () => {
-  const { enqueueSnackbar } = useSnackbar();
-
-  const [books, setBooks] = useState<Book[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { books, setBooks } = useContext<TAppContext>(AppContext);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const [openCreateBookDialog, setOpenCreateBookDialog] =
     useState<boolean>(false);
@@ -41,28 +41,11 @@ const BooksPage = () => {
   const [pageNumber, setPageNumber] = useState<number>(1);
 
   const handleSetRowsPerPage = (newRowsPerPage: number) => {
-    const start = (pageNumber-1)*rowsPerPage+1
-    const newPageNumber = Math.ceil(start/newRowsPerPage)
+    const start = (pageNumber - 1) * rowsPerPage + 1;
+    const newPageNumber = Math.ceil(start / newRowsPerPage);
     setRowsPerPage(newRowsPerPage);
-    setPageNumber(newPageNumber)
-  }
-
-  const handleFetchBooks = async () => {
-    setLoading(true);
-    const data = await fetchAllBooks();
-    if (!data) {
-      enqueueSnackbar("Something went wrong. Please try again later", {
-        variant: "error",
-        preventDuplicate: true,
-      });
-    }
-    setBooks(data ?? []);
-    setLoading(false);
+    setPageNumber(newPageNumber);
   };
-
-  useEffect(() => {
-    handleFetchBooks();
-  }, []);
 
   return (
     <DashboardContainer>
@@ -146,7 +129,9 @@ const BooksPage = () => {
                 <FormControl orientation="horizontal" size="sm">
                   <FormLabel>Rows per page:</FormLabel>
                   <Select
-                    onChange={(_, val: number | null) => val !== null && handleSetRowsPerPage(val)}
+                    onChange={(_, val: number | null) =>
+                      val !== null && handleSetRowsPerPage(val)
+                    }
                     value={rowsPerPage}
                   >
                     <Option value={10}>10</Option>
@@ -197,7 +182,7 @@ const BooksPage = () => {
         open={openCreateBookDialog || openEditBookDialog}
         isEditing={openEditBookDialog}
         onClose={() => {
-          handleFetchBooks();
+          handleFetchAllBooks(setLoading, setBooks);
           setOpenCreateBookDialog(false);
           setOpenEditBookDialog(false);
         }}
@@ -206,7 +191,7 @@ const BooksPage = () => {
       <ImportBookModal
         open={openImportBookDialog}
         onClose={() => {
-          handleFetchBooks();
+          handleFetchAllBooks(setLoading, setBooks);
           setOpenImportBookDialog(false);
         }}
       />
@@ -214,7 +199,7 @@ const BooksPage = () => {
         <DeleteBookModal
           open={openDeleteBookDialog}
           onClose={() => {
-            handleFetchBooks();
+            handleFetchAllBooks(setLoading, setBooks);
             setOpenDeleteBookDialog(false);
           }}
           book={bookToEdit}

@@ -1,9 +1,18 @@
+import { Dashboard } from "@mui/icons-material";
+import { useState, useContext, useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Books from "./views/Book";
+import {
+  TAppContext,
+  AppContext,
+  AppContextProvider,
+} from "./context/AppContext";
 import ErrorPage from "./views/ErrorPage";
-import Dashboard from "./views/Dashboard";
+import Transaction from "./views/Transactions";
 import Users from "./views/Users";
-import Transaction from "./views/Transaction";
+import Book from "./views/Books";
+import { handleFetchAllData } from "./utils/helper/fetchAllResources";
+import LoadingScreen from "./components/LoadingScreen";
+import Header from "./components/Header";
 
 const router = createBrowserRouter([
   {
@@ -13,7 +22,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/books",
-    element: <Books />,
+    element: <Book />,
   },
   {
     path: "/users",
@@ -21,10 +30,24 @@ const router = createBrowserRouter([
   },
   {
     path: "/checkout",
-    element: <Transaction />
-  }
+    element: <Transaction />,
+  },
 ]);
 
 export const AppRouter = () => {
-  return <RouterProvider router={router} />;
+  const [loading, setLoading] = useState<boolean>(false);
+  const { setUsers, setBooks, setTransactions } =
+    useContext<TAppContext>(AppContext);
+
+  useEffect(() => {
+    console.log("Fetcching Everything");
+    handleFetchAllData(setLoading, setBooks, setUsers, setTransactions);
+  }, []);
+  return (
+    <>
+      <LoadingScreen loading={loading} />
+      <Header />
+      <RouterProvider router={router} />;
+    </>
+  );
 };

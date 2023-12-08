@@ -1,71 +1,24 @@
 import { Box, Stack, Button, Table, Typography } from "@mui/joy";
 import { useSnackbar } from "notistack";
-import { useState, useEffect } from "react";
+import { useState, useContext } from "react";
 import { fetchAllUsers } from "../api/user";
 import DashboardContainer from "../components/DashboardContainer";
 import LoadingScreen from "../components/LoadingScreen";
-import { User } from "../models/user";
-import { Book } from "../models/book";
 import { fetchAllBooks } from "../api/book";
 import { fetchAllTransactions, updateTransaction } from "../api/transaction";
-import { Status, Transaction } from "../models/transaction";
+import { Status } from "../models/transaction";
 import CreateTransactionModal from "../components/Transaction/CreateTransactionModal";
+import { AppContext, TAppContext } from "../context/AppContext";
+import { handleFetchAllTransactions } from "../utils/helper/fetchAllResources";
 
 const TransactionPage = () => {
   const { enqueueSnackbar } = useSnackbar();
-
-  const [users, setUsers] = useState<User[]>([]);
-  const [books, setBooks] = useState<Book[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { users, books, transactions, setTransactions } =
+    useContext<TAppContext>(AppContext);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const [openCreateTransactionDialog, setOpenCreateTransactionDialog] =
-    useState(false);
-
-  const handleFetchAllUsers = async () => {
-    setLoading(true);
-    const data = await fetchAllUsers();
-    if (!data) {
-      enqueueSnackbar("Something went wrong. Please try again later", {
-        variant: "error",
-        preventDuplicate: true,
-      });
-    }
-    setUsers(data ?? []);
-    setLoading(false);
-  };
-
-  const handleFetchAllBooks = async () => {
-    setLoading(true);
-    const data = await fetchAllBooks();
-    if (!data) {
-      enqueueSnackbar("Something went wrong. Please try again later", {
-        variant: "error",
-        preventDuplicate: true,
-      });
-    }
-    setBooks(data ?? []);
-    setLoading(false);
-  };
-
-  const handleFetchAllTransactions = async () => {
-    setLoading(true);
-    const data = await fetchAllTransactions();
-    if (!data) {
-      enqueueSnackbar("Something went wrong. Please try again later", {
-        variant: "error",
-        preventDuplicate: true,
-      });
-    }
-    setTransactions(data ?? []);
-    setLoading(false);
-  };
-
-  const handleFetchAllData = async () => {
-    await handleFetchAllUsers();
-    await handleFetchAllBooks();
-    await handleFetchAllTransactions();
-  };
+    useState<boolean>(false);
 
   const handleUpdateTransaction = async (id: number, status: Status) => {
     setLoading(true);
@@ -76,14 +29,9 @@ const TransactionPage = () => {
         preventDuplicate: true,
       });
     }
-    await handleFetchAllTransactions();
+    await handleFetchAllTransactions(setLoading, setTransactions);
     setLoading(false);
   };
-
-  useEffect(() => {
-    handleFetchAllData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <DashboardContainer>
@@ -139,7 +87,7 @@ const TransactionPage = () => {
         open={openCreateTransactionDialog}
         onClose={() => {
           setOpenCreateTransactionDialog(false);
-          handleFetchAllTransactions();
+          handleFetchAllTransactions(setLoading, setTransactions);
         }}
         books={books}
         users={users}

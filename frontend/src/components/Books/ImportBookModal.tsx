@@ -33,7 +33,7 @@ const ImportBookModal = (props: ImportBookModalProps) => {
 
   const [loading, setLoading] = useState<boolean>(false);
   const [title, setTitle] = useState<string>("");
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState<number>(10);
 
   const [importedBooks, setImportedBooks] = useState<Array<Book>>([]);
   const [selectedBookIndices, setSelectedBookIndices] = useState<

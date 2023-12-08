@@ -11,27 +11,25 @@ import {
   Option,
 } from "@mui/joy";
 import DashboardContainer from "../components/DashboardContainer";
-import { useEffect, useState } from "react";
-import { useSnackbar } from "notistack";
-import LoadingScreen from "../components/LoadingScreen";
+import { useContext, useState } from "react";
 import { User } from "../models/user";
 import CreateUserModal from "../components/Users/CreateUserModal";
 import DeleteUserModal from "../components/Users/DeleteUserModal";
-import { fetchAllUsers } from "../api/user";
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import UserModal from "../components/Users/UserModal";
+import { AppContext, TAppContext } from "../context/AppContext";
+import { handleFetchAllUsers } from "../utils/helper/fetchAllResources";
 
 const UsersPage = () => {
-  const { enqueueSnackbar } = useSnackbar();
+  const { users, setUsers } = useContext<TAppContext>(AppContext);
 
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [openCreateUserDialog, setOpenCreateUserDialog] = useState(false);
-  const [openEditUserDialog, setOpenEditUserDialog] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [openCreateUserDialog, setOpenCreateUserDialog] = useState<boolean>(false);
+  const [openEditUserDialog, setOpenEditUserDialog] = useState<boolean>(false);
   const [userToEdit, setUserToEdit] = useState<User | undefined>(undefined);
-  const [openDeleteUserDialog, setOpenDeleteUserDialog] = useState(false);
-  const [openUserModal, setOpenUserModal] = useState(false);
+  const [openDeleteUserDialog, setOpenDeleteUserDialog] = useState<boolean>(false);
+  const [openUserModal, setOpenUserModal] = useState<boolean>(false);
 
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [pageNumber, setPageNumber] = useState<number>(1);
@@ -43,27 +41,8 @@ const UsersPage = () => {
     setPageNumber(newPageNumber);
   };
 
-  const handleFetchUsers = async () => {
-    setLoading(true);
-    const data = await fetchAllUsers();
-    if (!data) {
-      enqueueSnackbar("Something went wrong. Please try again later", {
-        variant: "error",
-        preventDuplicate: true,
-      });
-    }
-    setUsers(data ?? []);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    handleFetchUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <DashboardContainer>
-      <LoadingScreen loading={loading} />
       <Typography level="h2" sx={{ marginY: "25px" }}>
         Users
       </Typography>
@@ -203,7 +182,7 @@ const UsersPage = () => {
         open={openCreateUserDialog || openEditUserDialog}
         isEditing={openEditUserDialog}
         onClose={() => {
-          handleFetchUsers();
+          handleFetchAllUsers(setLoading, setUsers);
           setOpenCreateUserDialog(false);
           setOpenEditUserDialog(false);
         }}
@@ -213,7 +192,7 @@ const UsersPage = () => {
         <DeleteUserModal
           open={openDeleteUserDialog}
           onClose={() => {
-            handleFetchUsers();
+            handleFetchAllUsers(setLoading, setUsers);
             setOpenDeleteUserDialog(false);
           }}
           user={userToEdit!}
