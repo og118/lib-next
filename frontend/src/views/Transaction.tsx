@@ -1,4 +1,4 @@
-import { Box, Stack, Button, Table } from "@mui/joy";
+import { Box, Stack, Button, Table, Typography } from "@mui/joy";
 import { useSnackbar } from "notistack";
 import { useState, useEffect } from "react";
 import { fetchAllUsers } from "../api/user";
@@ -88,7 +88,9 @@ const TransactionPage = () => {
   return (
     <DashboardContainer>
       <LoadingScreen loading={loading} />
-      <h1>Transactions</h1>
+      <Typography level="h2" sx={{ marginY: "25px" }}>
+        Transactions
+      </Typography>
       <Box
         sx={{
           display: "flex",
@@ -105,9 +107,10 @@ const TransactionPage = () => {
       <Table>
         <thead>
           <tr>
-            <th style={{ width: "40%" }}>Name</th>
-            <th>Title</th>
+            <th>Name</th>
+            <th style={{ width: "40%" }}>Title</th>
             <th>Status</th>
+            <th></th>
           </tr>
           {transactions.map((t) => (
             <tr key={t.id}>

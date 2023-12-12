@@ -40,123 +40,47 @@ const ImportBookModal = (props: ImportBookModalProps) => {
     Map<number, boolean>
   >(new Map());
 
-  const handleValidateBook = (book: Book) => {
-    if (book.authors.length === 0) {
-      enqueueSnackbar("Please add at least one author", {
-        variant: "error",
-        preventDuplicate: true,
-      });
-      return false;
-    }
-    if (book.stock_quantity <= 0) {
-      enqueueSnackbar("Stock quantity must be greater than 0", {
-        variant: "error",
-        preventDuplicate: true,
-      });
-      return false;
-    }
-    if (book.num_pages <= 0) {
-      enqueueSnackbar("Page count must be greater than 0", {
-        variant: "error",
-        preventDuplicate: true,
-      });
-      return false;
-    }
-    if (book.title === "") {
-      enqueueSnackbar("Title cannot be empty", {
-        variant: "error",
-        preventDuplicate: true,
-      });
-      return false;
-    }
-    if (book.publisher === "") {
-      enqueueSnackbar("Publisher cannot be empty", {
-        variant: "error",
-        preventDuplicate: true,
-      });
-      return false;
-    }
-    return true;
-  };
-
-  // const handleCreateBook = async () => {
-  //   setLoading(true);
-  //   if (!handleValidateBook()) {
-  //     setLoading(false);
-  //     return;
-  //   }
-  //   let data = null;
-  //   if (props.isEditing) {
-  //     if (!props.book) {
-  //       return;
-  //     }
-  //     data = await updateBook(props.book.id, book);
-  //   } else data = await createBook(book);
-  //   if (!data) {
-  //     enqueueSnackbar("Something went wrong. Please try again later", {
-  //       variant: "error",
-  //       preventDuplicate: true,
-  //     });
-  //     setLoading(false);
-  //     return;
-  //   }
-  //   enqueueSnackbar(
-  //     `Book ${props.isEditing ? "updated" : "created"} successfully`,
-  //     {
-  //       variant: "success",
-  //       preventDuplicate: true,
-  //     }
-  //   );
-  //   setLoading(false);
-  //   setBook(initialValues);
-  //   props.onClose();
-  // }; // const handleCreateBook = async () => {
-  //   setLoading(true);
-  //   if (!handleValidateBook()) {
-  //     setLoading(false);
-  //     return;
-  //   }
-  //   let data = null;
-  //   if (props.isEditing) {
-  //     if (!props.book) {
-  //       return;
-  //     }
-  //     data = await updateBook(props.book.id, book);
-  //   } else data = await createBook(book);
-  //   if (!data) {
-  //     enqueueSnackbar("Something went wrong. Please try again later", {
-  //       variant: "error",
-  //       preventDuplicate: true,
-  //     });
-  //     setLoading(false);
-  //     return;
-  //   }
-  //   enqueueSnackbar(
-  //     `Book ${props.isEditing ? "updated" : "created"} successfully`,
-  //     {
-  //       variant: "success",
-  //       preventDuplicate: true,
-  //     }
-  //   );
-  //   setLoading(false);
-  //   setBook(initialValues);
-  //   props.onClose();
-  // };
-
   const handleFetchBooks = async () => {
+    setLoading(true);
     const data = await fetchBookFromFrappeApi(limit, title);
     if (!data) {
       enqueueSnackbar("Something went wrong. Please try again later", {
         variant: "error",
         preventDuplicate: true,
       });
+      setLoading(false);
       return;
     }
     setImportedBooks(data["books"]);
+    setLoading(false);
     enqueueSnackbar(`Fetched ${data["count"]} books`, {
       variant: "success",
       preventDuplicate: true,
     });
+  };
+
+  const handleAddImportedBooksToLibrary = async () => {
+    if (selectedBookIndices.size === 0) {
+      enqueueSnackbar("Please select atleast one book to proceed", {
+        variant: "error",
+        preventDuplicate: true,
+      });
+      return;
+    }
+
+    setLoading(true);
+    const books: Array<Book> = [];
+    selectedBookIndices.forEach((v, k) => {
+      importedBooks[k].stock_quantity = 0;
+      books.push(importedBooks[k]);
+    });
+
+    const booksResponse = await createBooksInBatch(books);
+    enqueueSnackbar(`Added ${booksResponse['count_unique']} new books to library`, {
+      variant: "success",
+      preventDuplicate: true,
+    });
+    setLoading(false);
   };
 
   return (
@@ -302,25 +226,7 @@ const ImportBookModal = (props: ImportBookModalProps) => {
               justifyContent: "flex-end",
             }}
           >
-            <Button
-              onClick={async () => {
-                if (selectedBookIndices.size === 0) {
-                  enqueueSnackbar("Please select atleast one book to proceed", {
-                    variant: "error",
-                    preventDuplicate: true,
-                  });
-                  return;
-                }
-
-                const books: Array<Book> = [];
-                selectedBookIndices.forEach((v, k) => {
-                  importedBooks[k].stock_quantity = 0;
-                  books.push(importedBooks[k]);
-                });
-
-                const booksResponse = await createBooksInBatch(books);
-              }}
-            >
+            <Button onClick={handleAddImportedBooksToLibrary}>
               Add to Library
             </Button>
           </Stack>

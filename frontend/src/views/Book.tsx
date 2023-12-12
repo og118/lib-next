@@ -37,8 +37,15 @@ const BooksPage = () => {
   const [openDeleteBookDialog, setOpenDeleteBookDialog] =
     useState<boolean>(false);
 
-  const [rowsPerPage, setRowsPerPage] = useState<number>(5);
-  const [page, setPage] = useState<number>(0);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+  const [pageNumber, setPageNumber] = useState<number>(1);
+
+  const handleSetRowsPerPage = (newRowsPerPage: number) => {
+    const start = (pageNumber-1)*rowsPerPage+1
+    const newPageNumber = Math.ceil(start/newRowsPerPage)
+    setRowsPerPage(newRowsPerPage);
+    setPageNumber(newPageNumber)
+  }
 
   const handleFetchBooks = async () => {
     setLoading(true);
@@ -60,7 +67,9 @@ const BooksPage = () => {
   return (
     <DashboardContainer>
       <LoadingScreen loading={loading} />
-      <h1>Books</h1>
+      <Typography level="h2" sx={{ marginY: "25px" }}>
+        Library
+      </Typography>
       <Box
         sx={{
           display: "flex",
@@ -77,45 +86,52 @@ const BooksPage = () => {
           </Button>
         </Stack>
       </Box>
-      <Table>
+      <Table sx={{ width: "auto" }}>
         <thead>
           <tr>
             <th style={{ width: "40%" }}>Book Title</th>
-            <th>Author</th>
-            <th>Publisher</th>
-            <th>Stock</th>
+            <th style={{ width: "30%" }}>Author</th>
+            <th style={{ width: "15%" }}>Publisher</th>
+            <th style={{ width: "3%" }}>Stock</th>
             <th></th>
           </tr>
-          {books.map((book) => (
-            <tr key={book.id}>
-              <td>{book.title}</td>
-              <td>{book.authors.join(", ")}</td>
-              <td>{book.publisher}</td>
-              <td>{book.stock_quantity}</td>
-              <td>
-                <Box sx={{ display: "flex", gap: 1 }}>
-                  <Button
-                    onClick={() => {
-                      setBookToEdit(book);
-                      setOpenEditBookDialog(true);
-                    }}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    color="danger"
-                    onClick={() => {
-                      setBookToEdit(book);
-                      setOpenDeleteBookDialog(true);
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </Box>
-              </td>
-            </tr>
-          ))}
         </thead>
+        <tbody>
+          {books
+            .slice(
+              (pageNumber - 1) * rowsPerPage,
+              (pageNumber - 1) * rowsPerPage + rowsPerPage
+            )
+            .map((book) => (
+              <tr key={book.id}>
+                <td>{book.title}</td>
+                <td>{book.authors.join(", ")}</td>
+                <td>{book.publisher}</td>
+                <td>{book.stock_quantity}</td>
+                <td>
+                  <Box sx={{ display: "flex", gap: 1 }}>
+                    <Button
+                      onClick={() => {
+                        setBookToEdit(book);
+                        setOpenEditBookDialog(true);
+                      }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      color="danger"
+                      onClick={() => {
+                        setBookToEdit(book);
+                        setOpenDeleteBookDialog(true);
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </Box>
+                </td>
+              </tr>
+            ))}
+        </tbody>
         <tfoot>
           <tr>
             <td colSpan={6}>
@@ -130,28 +146,29 @@ const BooksPage = () => {
                 <FormControl orientation="horizontal" size="sm">
                   <FormLabel>Rows per page:</FormLabel>
                   <Select
-                    onChange={(_, val) => val !== null && setRowsPerPage(val)}
+                    onChange={(_, val: number | null) => val !== null && handleSetRowsPerPage(val)}
                     value={rowsPerPage}
                   >
-                    <Option value={5}>5</Option>
                     <Option value={10}>10</Option>
-                    <Option value={25}>25</Option>
+                    <Option value={20}>20</Option>
+                    <Option value={50}>50</Option>
                   </Select>
                 </FormControl>
-                {/* <Typography textAlign="center" sx={{ minWidth: 80 }}>
-                  {labelDisplayedRows({
-                    from: rows.length === 0 ? 0 : page * rowsPerPage + 1,
-                    to: getLabelDisplayedRowsTo(),
-                    count: rows.length === -1 ? -1 : rows.length,
-                  })}
-                </Typography> */}
+                <Typography textAlign="center" sx={{ minWidth: 80 }}>
+                  {(pageNumber - 1) * rowsPerPage + 1}-
+                  {(pageNumber - 1) * rowsPerPage + 1 + rowsPerPage - 1 >
+                  books.length
+                    ? books.length
+                    : (pageNumber - 1) * rowsPerPage + 1 + rowsPerPage - 1}{" "}
+                  of {books.length}
+                </Typography>
                 <Box sx={{ display: "flex", gap: 1 }}>
                   <IconButton
                     size="sm"
                     color="neutral"
                     variant="outlined"
-                    // disabled={page === 0}
-                    // onClick={() => handleChangePage(page - 1)}
+                    disabled={pageNumber === 1}
+                    onClick={() => setPageNumber(pageNumber - 1)}
                     sx={{ bgcolor: "background.surface" }}
                   >
                     <KeyboardArrowLeftIcon />
@@ -160,12 +177,12 @@ const BooksPage = () => {
                     size="sm"
                     color="neutral"
                     variant="outlined"
-                    // disabled={
-                    //   rows.length !== -1
-                    //     ? page >= Math.ceil(rows.length / rowsPerPage) - 1
-                    //     : false
-                    // }
-                    // onClick={() => handleChangePage(page + 1)}
+                    disabled={
+                      pageNumber === Math.ceil(books.length / rowsPerPage)
+                    }
+                    onClick={() => {
+                      setPageNumber(pageNumber + 1);
+                    }}
                     sx={{ bgcolor: "background.surface" }}
                   >
                     <KeyboardArrowRightIcon />

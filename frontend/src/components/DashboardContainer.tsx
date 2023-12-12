@@ -6,7 +6,7 @@ const DashboardContainer = ({ children }: { children: ReactNode }) => {
   return (
     <>
       <Header />
-      <Container>{children}</Container>
+      <Container maxWidth="xl">{children}</Container>
     </>
   );
 };

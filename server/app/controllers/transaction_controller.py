@@ -1,3 +1,6 @@
+from datetime import datetime
+import os
+from typing import List
 from fastapi import APIRouter
 
 from app.entities.transctions import CreateTransactionInput, TransactionStatus
@@ -70,10 +73,16 @@ async def update_transaction(transaction_id: int, status: TransactionStatus):
 async def get_all_transactions_for_user(user_id: int):
     try:
         transactions = await TransactionService().get_all_transactions_for_user(user_id)
+        
+        charge_per_day: int = int(os.environ.get('CHARGE_PER_DAY'))
+        dues: List[int] = [(datetime.now().date() - x.created_at.date()).days for x in transactions
+                                if x.status == TransactionStatus.PENDING]*charge_per_day
+        total_due: int = sum(dues)
+
     except Exception as e:
         logger.info(f"Error while getting transactions for user_id: {user_id} - {e}")
         return []
-    return transactions
+    return {"total_due": total_due, "transactions": transactions}
 
 
 @router.get(path="/books/{book_id}")
